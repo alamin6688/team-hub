@@ -72,7 +72,7 @@ Run both frontend and backend in development mode from the root:
 npm run dev
 ```
 
-The web app will be available at `http://localhost:3000` and the API at `http://localhost:5000`.
+The web app will be available at `http://localhost:3000` and the API at `http://localhost:8000`.
 
 ## Features
 - ✅ Modular Backend Architecture
