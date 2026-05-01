@@ -1,0 +1,24 @@
+model Workspace {
+  id           String    @id @default(cuid())
+  name         String
+  description  String?
+  accentColor  String    @default("#e94560")
+
+  members      WorkspaceMember[]
+  goals        Goal[]
+  announcements Announcement[]
+  actionItems  ActionItem[]
+  auditLogs    AuditLog[]
+}
+
+model WorkspaceMember {
+  id          String    @id @default(cuid())
+  role        Role      @default(MEMBER)
+  userId      String
+  workspaceId String
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId])
+}

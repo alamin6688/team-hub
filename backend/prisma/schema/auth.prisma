@@ -1,16 +1,8 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
-
-datasource db {
-  provider = "postgresql"
-}
-
 enum Role {
   USER
   ADMIN
   SUPER_ADMIN
+  MEMBER
 }
 
 enum OtpPurpose {
@@ -19,24 +11,31 @@ enum OtpPurpose {
 }
 
 model User {
-  id              String    @id @default(uuid())
+  id              String    @id @default(cuid())
   email           String    @unique
   password        String
-  name            String?
+  name            String
+  avatarUrl       String?
   role            Role      @default(USER)
   isEmailVerified Boolean   @default(false)
   isActive        Boolean   @default(true)
   lastLogin       DateTime?
   createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
 
+  memberships   WorkspaceMember[]
+  ownedGoals    Goal[]
+  assignedItems ActionItem[]
+  comments      Comment[]
+  reactions     Reaction[]
+  notifications Notification[]
+  auditLogs     AuditLog[]
   otpTokens     OtpToken[]
   refreshTokens RefreshToken[]
 }
 
 model OtpToken {
-  id        String     @id @default(uuid()) 
-  userId    String      
+  id        String     @id @default(uuid())
+  userId    String
   otp       String
   purpose   OtpPurpose
   expiresAt DateTime
@@ -49,8 +48,8 @@ model OtpToken {
 }
 
 model RefreshToken {
-  id        String   @id @default(uuid()) 
-  userId    String  
+  id        String   @id @default(uuid())
+  userId    String
   token     String   @unique
   expiresAt DateTime
   createdAt DateTime @default(now())
@@ -59,5 +58,3 @@ model RefreshToken {
 
   @@index([userId])
 }
-
-

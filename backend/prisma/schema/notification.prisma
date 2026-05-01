@@ -1,0 +1,16 @@
+enum NotificationType {
+  MENTION
+  GOAL_UPDATE
+  INVITE
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  type      NotificationType
+  message   String
+  read      Boolean          @default(false)
+  link      String?
+  userId    String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

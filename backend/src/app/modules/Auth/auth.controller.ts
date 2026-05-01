@@ -35,9 +35,8 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
 });
 
 const logout = catchAsync(async (req: Request, res: Response) => {
-  const accessToken = req.headers.authorization?.split(" ")[1] ?? "";
   const { refreshToken } = req.body as { refreshToken?: string };
-  await AuthService.logout(accessToken, refreshToken);
+  await AuthService.logout(refreshToken);
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,

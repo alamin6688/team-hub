@@ -1,0 +1,34 @@
+model Announcement {
+  id          String   @id @default(cuid())
+  title       String
+  content     String   // rich text JSON
+  pinned      Boolean  @default(false)
+  workspaceId String
+  authorId    String
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  comments  Comment[]
+  reactions Reaction[]
+}
+
+model Comment {
+  id             String   @id @default(cuid())
+  content        String
+  authorId       String
+  announcementId String
+
+  author       User         @relation(fields: [authorId], references: [id])
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+}
+
+model Reaction {
+  id             String   @id @default(cuid())
+  emoji          String
+  userId         String
+  announcementId String
+
+  user         User         @relation(fields: [userId], references: [id])
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, announcementId, emoji])
+}

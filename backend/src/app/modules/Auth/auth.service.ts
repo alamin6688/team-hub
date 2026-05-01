@@ -98,6 +98,10 @@ const login = async (loginData: ILoginInput) => {
     throw new ApiError(httpStatus.FORBIDDEN, "Your account has been deactivated.");
   }
 
+  if (!user.isEmailVerified) {
+    throw new ApiError(httpStatus.FORBIDDEN, "Please verify your email before logging in.");
+  }
+
   const isPasswordValid = await compareItem(loginData.password, user.password);
   if (!isPasswordValid) {
     throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid email or password.");
@@ -169,8 +173,7 @@ const refreshAccessToken = async ({ refreshToken }: IRefreshTokenInput) => {
   return { accessToken, refreshToken: newRefreshToken };
 };
 
-const logout = async (accessToken: string, refreshToken?: string) => {
-
+const logout = async (refreshToken?: string) => {
   // Remove refresh token from DB
   if (refreshToken) {
     await prisma.refreshToken.deleteMany({ where: { token: refreshToken } });
@@ -181,6 +184,9 @@ const verifyEmail = async ({ email, otp }: IVerifyEmailInput) => {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found.");
+  }
+  if (!user.isActive) {
+    throw new ApiError(httpStatus.FORBIDDEN, "Your account has been deactivated.");
   }
   if (user.isEmailVerified) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Email is already verified.");
@@ -218,7 +224,11 @@ const resendOtp = async ({ email, purpose }: IResendOtpInput) => {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found.");
   }
 
-  if (purpose === "EMAIL_VERIFICATION" && user.isEmailVerified) {
+  if (!user.isActive) {
+    throw new ApiError(httpStatus.FORBIDDEN, "Your account has been deactivated.");
+  }
+
+  if (purpose === OtpPurpose.EMAIL_VERIFICATION && user.isEmailVerified) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Email is already verified.");
   }
 
@@ -228,7 +238,7 @@ const resendOtp = async ({ email, purpose }: IResendOtpInput) => {
 const forgotPassword = async ({ email }: IForgotPasswordInput) => {
   const user = await prisma.user.findUnique({ where: { email } });
   // Return success even if user not found (security: don't confirm email existence)
-  if (!user) return;
+  if (!user || !user.isActive) return;
 
   await createAndSendOtp(email, OtpPurpose.PASSWORD_RESET, user.id);
 };
@@ -237,6 +247,9 @@ const verifyOtp = async ({ email, otp }: IVerifyOtpInput) => {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found.");
+  }
+  if (!user.isActive) {
+    throw new ApiError(httpStatus.FORBIDDEN, "Your account has been deactivated.");
   }
 
   const otpRecord = await prisma.otpToken.findFirst({
@@ -275,6 +288,9 @@ const resetPassword = async ({ resetToken, newPassword }: IResetPasswordInput) =
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found.");
   }
+  if (!user.isActive) {
+    throw new ApiError(httpStatus.FORBIDDEN, "Your account has been deactivated.");
+  }
 
   const hashedPassword = await hashItem(newPassword);
 
@@ -292,6 +308,9 @@ const changePassword = async (userId: string, data: IChangePasswordInput) => {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, "User not found.");
+  }
+  if (!user.isActive) {
+    throw new ApiError(httpStatus.FORBIDDEN, "Your account has been deactivated.");
   }
 
   const isOldPasswordValid = await compareItem(data.oldPassword, user.password);

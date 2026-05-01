@@ -1,0 +1,43 @@
+enum GoalStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  IN_REVIEW
+  COMPLETED
+  OVERDUE
+}
+
+model Goal {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  status      GoalStatus @default(NOT_STARTED)
+  dueDate     DateTime?
+  ownerId     String
+  workspaceId String
+
+  owner       User         @relation(fields: [ownerId], references: [id])
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  milestones  Milestone[]
+  actionItems ActionItem[]
+  updates     GoalUpdate[]
+}
+
+model Milestone {
+  id        String    @id @default(cuid())
+  title     String
+  progress  Int       @default(0)
+  completed Boolean   @default(false)
+  dueDate   DateTime?
+  goalId    String
+
+  goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+}
+
+model GoalUpdate {
+  id        String   @id @default(cuid())
+  content   String
+  goalId    String
+  createdAt DateTime @default(now())
+
+  goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+}
