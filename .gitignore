@@ -28,8 +28,16 @@ Thumbs.db
 # Testing
 coverage/
 
-# Prisma
-/generated/prisma
+# Next.js build output
+.next/
+out/
+
+# Turborepo
+.turbo/
 
 # TypeScript
 *.tsbuildinfo
+
+# OS files
+.DS_Store
+Thumbs.db
