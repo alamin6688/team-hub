@@ -1,9 +1,10 @@
+const path = require("path");
+const dotenv = require("dotenv");
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
+
 const app = require("./app");
 const http = require("http");
 const { Server } = require("socket.io");
-const dotenv = require("dotenv");
-
-dotenv.config();
 
 const port = process.env.PORT || 8000;
 const server = http.createServer(app);

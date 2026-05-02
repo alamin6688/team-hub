@@ -33,8 +33,8 @@ const login = async (loginData) => {
   const { email, password } = loginData;
 
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user || !user.isActive) {
-    throw new Error("Invalid credentials or account deactivated");
+  if (!user) {
+    throw new Error("Invalid credentials");
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -73,7 +73,7 @@ const refreshToken = async (token) => {
     const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET || "refresh_secret");
     const user = await prisma.user.findUnique({ where: { id: decoded.id } });
 
-    if (!user || !user.isActive) throw new Error("User not found or deactivated");
+    if (!user) throw new Error("User not found");
 
     const accessToken = jwt.sign(
       { id: user.id, email: user.email },
