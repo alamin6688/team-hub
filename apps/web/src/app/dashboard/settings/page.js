@@ -11,7 +11,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import AuditLogTimeline from '@/components/dashboard/AuditLogTimeline';
+import AuditLogTimeline from '@/components/Dashboard/AuditLogTimeline';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -49,7 +49,7 @@ export default function SettingsPage() {
   const fileInputRef = React.useRef(null);
 
   const currentMember = members.find(m => m.id === user?.id);
-  const isAdmin = currentMember?.role === 'ADMIN' || true;
+  const isAdmin = currentMember?.role === 'ADMIN';
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -139,10 +139,10 @@ export default function SettingsPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${
-                    active 
-                      ? 'bg-indigo-50 text-indigo-700 shadow-sm' 
-                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    active
+                      ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400"
+                      : "text-gray-600 hover:bg-gray-50 dark:text-slate-400 dark:hover:bg-indigo-500/5 dark:hover:text-indigo-300"
                   }`}
                 >
                   <Icon size={18} strokeWidth={active ? 2.5 : 2} />
@@ -156,7 +156,7 @@ export default function SettingsPage() {
             <div className="mt-10 pt-6 border-t border-slate-100">
               <button 
                 onClick={() => setShowDeleteModal(true)}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-rose-500 hover:bg-rose-50 transition-all"
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all"
               >
                 <Trash2 size={18} />
                 Delete Workspace
@@ -175,7 +175,7 @@ export default function SettingsPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -8 }}
                 transition={{ duration: 0.25, ease: "easeOut" }}
-                className="bg-white rounded-[32px] border border-slate-100 shadow-sm p-8"
+                className="bg-white dark:bg-slate-900/40 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm p-8"
               >
                 <h3 className="text-lg font-bold text-slate-900 mb-8">Personal Information</h3>
                 
@@ -206,7 +206,7 @@ export default function SettingsPage() {
                         type="button"
                         onClick={handleAvatarClick}
                         disabled={isUploading}
-                        className="absolute -bottom-2 -right-2 p-2 bg-white rounded-xl shadow-lg border border-slate-100 text-slate-600 hover:text-indigo-600 transition-all disabled:opacity-50"
+                        className="absolute -bottom-2 -right-2 p-2 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all disabled:opacity-50"
                       >
                         <Camera size={18} />
                       </button>
@@ -253,7 +253,8 @@ export default function SettingsPage() {
                     <button 
                       type="submit"
                       disabled={isSaving}
-                      className="flex items-center gap-2 px-8 py-3 bg-[#1e1b4b] text-white rounded-2xl text-sm font-bold hover:bg-[#2e2a70] transition-all shadow-lg shadow-indigo-100 disabled:opacity-70"
+                      style={{ backgroundColor: 'var(--primary-brand)' }}
+                      className="flex items-center gap-2 px-8 py-3 text-white rounded-2xl text-sm font-bold transition-all shadow-lg shadow-indigo-100 disabled:opacity-70 hover:brightness-110 active:scale-95"
                     >
                       {isSaving ? (
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -274,7 +275,7 @@ export default function SettingsPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -8 }}
                 transition={{ duration: 0.25, ease: "easeOut" }}
-                className="bg-white rounded-[32px] border border-slate-100 shadow-sm p-8"
+                className="bg-white dark:bg-slate-900/40 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm p-8"
               >
                 <div className="flex items-center justify-between mb-8">
                   <h3 className="text-lg font-bold text-slate-900">Workspace Settings</h3>
@@ -337,7 +338,8 @@ export default function SettingsPage() {
                     <button 
                       type="submit"
                       disabled={isSaving || !isAdmin}
-                      className="flex items-center gap-2 px-8 py-3 bg-[#1e1b4b] text-white rounded-2xl text-sm font-bold hover:bg-[#2e2a70] transition-all shadow-lg shadow-indigo-100 disabled:opacity-50"
+                      style={{ backgroundColor: 'var(--primary-brand)' }}
+                      className="flex items-center gap-2 px-8 py-3 text-white rounded-2xl text-sm font-bold transition-all shadow-lg shadow-indigo-100 disabled:opacity-50 hover:brightness-110 active:scale-95"
                     >
                       {isSaving ? (
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -358,7 +360,7 @@ export default function SettingsPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -8 }}
                 transition={{ duration: 0.25, ease: "easeOut" }}
-                className="bg-white rounded-[32px] border border-slate-100 shadow-sm p-8"
+                className="bg-white dark:bg-slate-900/40 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm p-8"
               >
                 <div className="flex items-center justify-between mb-8">
                   <div>

@@ -209,7 +209,7 @@ export default function GoalsPage() {
 
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#1e1b4b] text-white rounded-lg text-sm font-medium hover:bg-[#2e2a70] transition-colors shadow-sm"
+            className="btn-primary-dynamic flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium shadow-sm"
           >
             <Plus size={16} />
             New Goal
@@ -477,7 +477,7 @@ export default function GoalsPage() {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="flex-1 px-4 py-3 bg-[#1e1b4b] text-white font-semibold rounded-xl hover:bg-[#2e2a70] shadow-lg shadow-indigo-200 transition-colors flex items-center justify-center gap-2"
+                    className="btn-primary-dynamic flex-1 px-4 py-3 font-semibold rounded-xl shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
                   >
                     {isLoading ? (
                       <Loader2 size={20} className="animate-spin" />

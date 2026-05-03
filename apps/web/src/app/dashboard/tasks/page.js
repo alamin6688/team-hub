@@ -205,7 +205,7 @@ export default function TasksPage() {
             onClick={() => setView("board")}
             className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
               view === "board"
-                ? "bg-[#1e1b4b] text-white shadow-md"
+                ? "btn-primary-dynamic text-white shadow-md"
                 : "text-gray-500 hover:text-gray-900"
             }`}
           >
@@ -216,7 +216,7 @@ export default function TasksPage() {
             onClick={() => setView("list")}
             className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all ${
               view === "list"
-                ? "bg-[#1e1b4b] text-white shadow-md"
+                ? "btn-primary-dynamic text-white shadow-md"
                 : "text-gray-500 hover:text-gray-900"
             }`}
           >
@@ -228,11 +228,20 @@ export default function TasksPage() {
         <button
           onClick={() => {
             setEditingTask(null);
+            setFormData({
+              title: "",
+              description: "",
+              priority: "MEDIUM",
+              status: "TODO",
+              dueDate: "",
+              assigneeId: "",
+              goalId: "",
+            });
             setShowAddModal(true);
           }}
-          className="flex items-center gap-2 px-6 py-2.5 bg-[#1e1b4b] hover:bg-[#2e2a70] text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-indigo-100 active:scale-95"
+          className="btn-primary-dynamic flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-bold shadow-lg shadow-indigo-100"
         >
-          <Plus size={18} strokeWidth={3} />
+          <Plus size={20} strokeWidth={3} />
           Add Item
         </button>
       </motion.div>
@@ -687,7 +696,7 @@ export default function TasksPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex-[2] px-6 py-4 bg-[#1e1b4b] text-white font-bold rounded-2xl hover:bg-[#2e2a70] shadow-xl shadow-indigo-100 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="btn-primary-dynamic flex-[2] px-6 py-4 font-bold rounded-2xl shadow-xl shadow-indigo-100 flex items-center justify-center gap-2"
                   >
                     {isSubmitting ? (
                       <>

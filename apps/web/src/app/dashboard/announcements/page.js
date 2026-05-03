@@ -137,7 +137,7 @@ export default function AnnouncementsPage() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-[#1e1b4b] hover:bg-[#2e2a70] text-white rounded-2xl text-sm font-bold transition-all shadow-lg shadow-indigo-100"
+            className="btn-primary-dynamic flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-bold shadow-lg shadow-indigo-100"
           >
             <Plus size={20} strokeWidth={3} />
             Post Announcement
@@ -459,7 +459,7 @@ export default function AnnouncementsPage() {
                   <button 
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex-[2] px-8 py-5 bg-[#1e1b4b] text-white font-semibold rounded-2xl hover:bg-[#2e2a70] shadow-2xl shadow-indigo-100 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                    className="btn-primary-dynamic flex-[2] px-8 py-5 font-semibold rounded-2xl shadow-2xl shadow-indigo-100 flex items-center justify-center gap-3"
                   >
                     {isSubmitting ? (
                       <>

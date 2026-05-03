@@ -124,12 +124,16 @@ export default function AuditLogTimeline() {
           </select>
         </div>
 
-        <button 
+        <button
           onClick={handleExport}
-          disabled={isExporting || logs.length === 0}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-50 transition-all shadow-sm disabled:opacity-50"
+          disabled={isExporting}
+          className="btn-primary-dynamic flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold shadow-sm"
         >
-          {isExporting ? <div className="w-3 h-3 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" /> : <Download size={14} />}
+          {isExporting ? (
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+          ) : (
+            <Download size={14} strokeWidth={3} />
+          )}
           Export CSV
         </button>
       </div>

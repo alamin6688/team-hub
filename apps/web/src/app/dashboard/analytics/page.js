@@ -84,7 +84,7 @@ export default function AnalyticsPage() {
         </div>
         <button 
           onClick={exportToCSV}
-          className="flex items-center gap-2 px-6 py-3 bg-[#1e1b4b] hover:bg-[#2e2a70] text-white rounded-2xl text-sm font-bold shadow-lg shadow-indigo-100 transition-all active:scale-95"
+          className="btn-primary-dynamic flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-bold shadow-lg shadow-indigo-100"
         >
           <Download size={16} strokeWidth={3} />
           Export CSV
@@ -138,6 +138,7 @@ export default function AnalyticsPage() {
                   dy={10}
                 />
                 <YAxis 
+                  allowDecimals={false}
                   axisLine={false} 
                   tickLine={false} 
                   tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }}
@@ -146,7 +147,7 @@ export default function AnalyticsPage() {
                   cursor={{ fill: '#f8fafc' }}
                   contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
                 />
-                <Bar dataKey="value" fill="#6366f1" radius={[8, 8, 0, 0]} barSize={40} />
+                <Bar dataKey="value" fill="var(--primary-brand)" radius={[8, 8, 0, 0]} barSize={40} />
               </BarChart>
             </ResponsiveContainer>
           </div>

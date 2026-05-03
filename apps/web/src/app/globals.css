@@ -10,17 +10,153 @@
 }
 
 @layer base {
+  html {
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
   body {
-    @apply bg-slate-50 text-slate-900 antialiased;
+    @apply bg-slate-50 text-slate-900 antialiased transition-colors duration-300;
+  }
+
+  html.dark body {
+    @apply bg-slate-950 text-slate-100;
+  }
+
+  /* Universal Dark Mode Overrides */
+  html.dark {
+    /* Backgrounds Hierarchy */
+    /* Cards and elevated surfaces */
+    .bg-white,
+    .bg-indigo-50\/30,
+    .bg-slate-50\/30 {
+      @apply bg-slate-800 !important;
+    }
+
+    /* Sub-surfaces and sections */
+    .bg-slate-50, 
+    .bg-gray-50, 
+    .bg-zinc-50,
+    .bg-gray-50\/50,
+    .bg-slate-50\/50 {
+      @apply bg-slate-900/50 !important;
+    }
+
+    /* Borders and separators */
+    .bg-gray-100,
+    .bg-slate-100,
+    .bg-zinc-100,
+    .bg-slate-200 {
+      @apply bg-slate-700 !important;
+    }
+
+    /* Text Colors */
+    [class*="text-slate-9"], [class*="text-gray-9"], [class*="text-zinc-9"],
+    [class*="text-slate-8"], [class*="text-gray-8"], [class*="text-zinc-8"],
+    .text-slate-950, .text-gray-950 {
+      @apply text-slate-100 !important;
+    }
+
+    [class*="text-slate-7"], [class*="text-gray-7"], [class*="text-zinc-7"],
+    [class*="text-slate-6"], [class*="text-gray-6"], [class*="text-zinc-6"],
+    [class*="text-slate-5"], [class*="text-gray-5"], [class*="text-zinc-5"],
+    [class*="text-slate-4"], [class*="text-gray-4"] {
+      @apply text-slate-400 !important;
+    }
+
+    /* Borders */
+    [class*="border-slate-1"], [class*="border-gray-1"], [class*="border-zinc-1"],
+    [class*="border-slate-2"], [class*="border-gray-2"], [class*="border-zinc-2"],
+    .border-white {
+      @apply border-slate-800 !important;
+    }
+
+    /* Badges & Status Colors */
+    .bg-emerald-100, .bg-green-100, .bg-emerald-50 { @apply bg-emerald-500/20 !important; }
+    .bg-blue-100, .bg-blue-50 { @apply bg-blue-500/20 !important; }
+    .bg-rose-100, .bg-red-100, .bg-rose-50 { @apply bg-rose-500/20 !important; }
+    .bg-indigo-100, .bg-indigo-50 { @apply bg-indigo-500/20 !important; }
+    .bg-sky-100, .bg-sky-50 { @apply bg-sky-500/20 !important; }
+    .bg-purple-100, .bg-purple-50 { @apply bg-purple-500/20 !important; }
+    .bg-amber-100, .bg-orange-100, .bg-amber-50 { @apply bg-amber-500/20 !important; }
+    .bg-pink-100, .bg-pink-50 { @apply bg-pink-500/20 !important; }
+
+    /* Badge Text */
+    .text-emerald-700, .text-emerald-600, .text-green-600 { @apply text-emerald-400 !important; }
+    .text-blue-700, .text-blue-600 { @apply text-blue-400 !important; }
+    .text-rose-700, .text-rose-600, .text-red-600 { @apply text-rose-400 !important; }
+    .text-indigo-700, .text-indigo-600, .text-indigo-500 { @apply text-indigo-400 !important; }
+    .text-sky-700, .text-sky-600 { @apply text-sky-400 !important; }
+    .text-purple-700, .text-purple-600 { @apply text-purple-400 !important; }
+    .text-amber-700, .text-amber-600, .text-orange-700, .text-orange-600 { @apply text-amber-400 !important; }
+    .text-pink-700, .text-pink-600 { @apply text-pink-400 !important; }
+
+    /* Form Elements */
+    input, select, textarea {
+      @apply bg-slate-900 border-slate-800 text-slate-100 !important;
+    }
+
+    input::placeholder, textarea::placeholder {
+      @apply text-slate-600 !important;
+    }
+
+    /* Shadows */
+    .shadow-sm, .shadow, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl {
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    .shadow-slate-100\/50, .shadow-indigo-100, .shadow-indigo-200 {
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+    }
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply px-6 py-3 bg-indigo-600 text-white rounded-xl font-semibold shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:scale-[1.02] active:scale-[0.98] transition-all;
+    @apply px-6 py-3 bg-indigo-600 text-white rounded-xl font-semibold shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:scale-[1.02] active:scale-[0.98] transition-all dark:shadow-none;
+  }
+
+  .glass {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 dark:bg-slate-900/70 dark:border-slate-800/50;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-slate-200 rounded-full dark:bg-slate-800;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-300 dark:bg-slate-700;
+  }
+}
+@layer components {
+  .btn-primary-dynamic {
+    background-color: var(--primary-brand) !important;
+    color: white !important;
+    transition: all 0.2s ease;
   }
   
-  .glass {
-    @apply bg-white/70 backdrop-blur-md border border-white/20;
+  .btn-primary-dynamic:hover {
+    filter: brightness(1.1);
+  }
+
+  .btn-primary-dynamic:active {
+    transform: scale(0.95);
+  }
+
+  .btn-primary-dynamic:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }

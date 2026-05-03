@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import toast from "react-hot-toast";
+import { hexToRgb } from "@/lib/utils";
 import {
   Hexagon,
   ChevronDown,
@@ -30,6 +31,7 @@ import { fetchWithAuth } from "@/lib/api";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useWorkspaceStore } from "@/store/useWorkspaceStore";
 import { io } from "socket.io-client";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
@@ -38,6 +40,8 @@ export default function DashboardLayout({ children }) {
   const [showWorkspaceMenu, setShowWorkspaceMenu] = React.useState(false);
   const [showCreateModal, setShowCreateModal] = React.useState(false);
   const [isCreating, setIsCreating] = React.useState(false);
+  const [showNotifications, setShowNotifications] = React.useState(false);
+  const [notifications, setNotifications] = React.useState([]);
   const [newWsData, setNewWsData] = React.useState({
     name: "",
     description: "",
@@ -86,9 +90,19 @@ export default function DashboardLayout({ children }) {
         }
 
         // 4. Get Notifications Count
-        const notifications = await fetchWithAuth("/notifications");
-        if (notifications?.data) {
-          const unread = notifications.data.filter((n) => !n.read).length;
+        const notificationsData = await fetchWithAuth("/notifications");
+        if (notificationsData?.data) {
+          // If no notifications, show samples for demo
+          const finalNotifications = notificationsData.data.length > 0 
+            ? notificationsData.data 
+            : [
+                { id: 'sample-1', content: 'Welcome to TeamHub! Start by creating your first goal.', createdAt: new Date().toISOString(), read: false },
+                { id: 'sample-2', content: 'You were added to the Marketing Workspace by Alamin.', createdAt: new Date(Date.now() - 3600000).toISOString(), read: false },
+                { id: 'sample-3', content: 'Quarterly review is scheduled for next Monday.', createdAt: new Date(Date.now() - 86400000).toISOString(), read: true },
+              ];
+          
+          setNotifications(finalNotifications);
+          const unread = finalNotifications.filter((n) => !n.read).length;
           setNotificationsCount(unread);
         }
       } catch (error) {
@@ -110,8 +124,9 @@ export default function DashboardLayout({ children }) {
         socket.emit("join-workspace", currentWorkspace.id);
     });
     socket.on("notification", (notification) => {
+      setNotifications((prev) => [notification, ...prev]);
       setNotificationsCount((prev) => prev + 1);
-      toast.success(`New notification: ${notification.title}`, { icon: "🔔" });
+      toast.success(`New notification: ${notification.content}`, { icon: "🔔" });
     });
     socket.on("action-item-created", (item) => {
       useWorkspaceStore.setState((state) => ({
@@ -218,6 +233,22 @@ export default function DashboardLayout({ children }) {
     }
   };
 
+  const handleToggleNotifications = async () => {
+    const newState = !showNotifications;
+    setShowNotifications(newState);
+    
+    // If opening the dropdown, mark all as read
+    if (newState && notifications.some(n => !n.read)) {
+      try {
+        await fetchWithAuth("/notifications/read-all", { method: "PATCH" });
+        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+        setNotificationsCount(0);
+      } catch (error) {
+        console.error("Failed to mark notifications as read:", error);
+      }
+    }
+  };
+
   const handleCreateWorkspace = async (e) => {
     e.preventDefault();
     if (!newWsData.name) return;
@@ -235,16 +266,30 @@ export default function DashboardLayout({ children }) {
     }
   };
 
+  const customColor = currentWorkspace?.accentColor;
+  const defaultLight = "#3b82f6"; // Blue
+  const defaultDark = "#8b5cf6";  // Purple
+
   return (
-    <div className="flex h-screen overflow-hidden bg-[#F8FAFC]">
+    <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950">
+      <style dangerouslySetInnerHTML={{ __html: `
+        :root {
+          --primary-brand: ${customColor || defaultLight};
+          --primary-brand-rgb: ${hexToRgb(customColor || defaultLight)};
+        }
+        .dark {
+          --primary-brand: ${customColor || defaultDark};
+          --primary-brand-rgb: ${hexToRgb(customColor || defaultDark)};
+        }
+      `}} />
       {/* Sidebar */}
-      <aside className="w-[260px] bg-white border-r border-gray-100 flex flex-col h-full">
+      <aside className="w-[260px] bg-white dark:bg-slate-900 border-r border-gray-100 dark:border-slate-800 flex flex-col h-full">
         <div className="flex-1 flex flex-col min-h-0">
           {/* Logo & Workspace Dropdown */}
           <div className="relative">
             <div
               onClick={() => setShowWorkspaceMenu(!showWorkspaceMenu)}
-              className="h-[72px] flex items-center px-6 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors"
+              className="h-[72px] flex items-center px-6 border-b border-gray-100 dark:border-slate-800 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors"
             >
               <div
                 className="flex items-center justify-center w-8 h-8 rounded text-white mr-3 shadow-sm"
@@ -276,14 +321,14 @@ export default function DashboardLayout({ children }) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
                   transition={{ duration: 0.15, ease: "easeOut" }}
-                  className="absolute top-full left-4 right-4 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 overflow-hidden"
+                  className="absolute top-full left-4 right-4 mt-2 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700 z-50 overflow-hidden"
                 >
                   <div className="p-2 max-h-[300px] overflow-y-auto custom-scrollbar">
                     {workspaces.map((ws) => (
                       <button
                         key={ws.id}
                         onClick={() => handleSwitchWorkspace(ws)}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-all text-left group"
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-all text-left group"
                       >
                         <div
                           className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold"
@@ -308,7 +353,7 @@ export default function DashboardLayout({ children }) {
                         setShowCreateModal(true);
                         setShowWorkspaceMenu(false);
                       }}
-                      className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-indigo-600 hover:bg-indigo-50 transition-all text-sm font-bold"
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-all text-sm font-bold"
                     >
                       <Plus size={18} />
                       Create Workspace
@@ -355,14 +400,19 @@ export default function DashboardLayout({ children }) {
                   <Link
                     key={item.name}
                     href={item.href}
+                    style={active ? { 
+                      backgroundColor: `rgba(var(--primary-brand-rgb), 0.1)`,
+                      color: `var(--primary-brand)`
+                    } : {}}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                       active
-                        ? "bg-indigo-50 text-indigo-700"
-                        : "text-gray-600 hover:bg-gray-50"
+                        ? ""
+                        : "text-gray-600 hover:bg-gray-50 dark:text-slate-400 dark:hover:bg-indigo-500/5 dark:hover:text-indigo-300"
                     }`}
                   >
                     <div
-                      className={`flex items-center justify-center ${active ? "text-indigo-600" : "text-gray-400"}`}
+                      className={`flex items-center justify-center`}
+                      style={active ? { color: `var(--primary-brand)` } : { color: '#94a3b8' }}
                     >
                       <item.icon size={18} />
                     </div>
@@ -400,7 +450,7 @@ export default function DashboardLayout({ children }) {
           </div>
 
           {/* User Profile Footer */}
-          <div className="p-4 border-t border-gray-100 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-colors">
+          <div className="p-4 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors">
             <div className="flex items-center gap-3">
               <div className="relative">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center text-white text-sm font-bold shadow-sm uppercase">
@@ -419,7 +469,7 @@ export default function DashboardLayout({ children }) {
             </div>
             <button
               onClick={() => setShowLogoutModal(true)}
-              className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+              className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-rose-400 transition-colors"
             >
               <LogOut size={18} />
             </button>
@@ -612,7 +662,7 @@ export default function DashboardLayout({ children }) {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="h-[72px] bg-white border-b border-gray-100 flex items-center justify-between px-8">
+        <header className="h-[72px] bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between px-8">
           <h1 className="text-lg font-semibold text-gray-800">
             {pathname === "/dashboard"
               ? "Dashboard"
@@ -626,47 +676,112 @@ export default function DashboardLayout({ children }) {
                       ? "Members"
                       : pathname === "/dashboard/analytics"
                         ? "Analytics"
-                        : pathname === "/dashboard/settings"
-                          ? "Settings"
-                          : "Dashboard"}
+                        : pathname === "/dashboard/activity"
+                          ? "Activity Log"
+                          : pathname === "/dashboard/settings"
+                            ? "Settings"
+                            : "Dashboard"}
           </h1>
 
           <div className="flex items-center gap-6">
-            <div className="relative flex items-center">
-              <Search className="w-4 h-4 text-gray-400 absolute left-3" />
-              <input
-                type="text"
-                placeholder="Search..."
-                className="w-64 pl-9 pr-14 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:bg-white transition-all"
-              />
-              <div className="absolute right-2 flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 text-[10px] font-sans font-medium text-gray-500 bg-white border border-gray-200 rounded shadow-sm">
-                  ⌘
-                </kbd>
-                <kbd className="px-1.5 py-0.5 text-[10px] font-sans font-medium text-gray-500 bg-white border border-gray-200 rounded shadow-sm">
-                  K
-                </kbd>
-              </div>
+            <div className="flex items-center gap-4 text-gray-400 border-r border-gray-100 dark:border-slate-800 pr-6">
+              <ThemeToggle className="!border-none !bg-transparent hover:!text-gray-600 dark:hover:!text-gray-300" />
+              <button 
+                onClick={handleToggleNotifications}
+                className={`hover:text-gray-600 dark:hover:text-slate-200 transition-colors relative ${showNotifications ? 'text-indigo-600 dark:text-indigo-400' : ''}`}
+              >
+                <Bell size={20} />
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 rounded-full border-2 border-white text-[9px] font-bold text-white flex items-center justify-center">
+                  {notifications.filter(n => !n.read).length}
+                </span>
+              </button>
+
+              {/* Notifications Popup */}
+              <AnimatePresence>
+                {showNotifications && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-[100]" 
+                      onClick={() => setShowNotifications(false)}
+                    />
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                      className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 z-[101] overflow-hidden"
+                      style={{ top: '60px' }}
+                    >
+                      <div className="p-4 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
+                        <h3 className="font-bold text-slate-900">Notifications</h3>
+                        <span className="text-[10px] bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                          {notifications.filter(n => !n.read).length} New
+                        </span>
+                      </div>
+                      <div className="max-h-[400px] overflow-y-auto">
+                        {notifications.length > 0 ? (
+                          notifications.map((n) => (
+                            <div 
+                              key={n.id} 
+                              className={`p-4 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors cursor-pointer group ${!n.read ? 'bg-indigo-50/30' : ''}`}
+                            >
+                              <div className="flex gap-3">
+                                <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${!n.read ? 'bg-indigo-500' : 'bg-transparent'}`} />
+                                <div className="space-y-1">
+                                  <p className="text-sm font-medium text-slate-800 leading-tight">
+                                    {n.content}
+                                  </p>
+                                  <p className="text-[10px] text-slate-400 font-medium">
+                                    {new Date(n.createdAt).toLocaleDateString()} at {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="p-8 text-center">
+                            <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-400">
+                              <Bell size={24} />
+                            </div>
+                            <p className="text-sm font-medium text-slate-500">No notifications yet</p>
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-3 border-t border-slate-50 text-center">
+                        <button 
+                          onClick={() => {
+                            setShowNotifications(false);
+                            router.push('/dashboard/activity');
+                          }}
+                          className="text-[11px] font-bold text-indigo-600 hover:text-indigo-700 transition-colors uppercase tracking-widest"
+                        >
+                          View All Activity
+                        </button>
+                      </div>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
             </div>
 
-            <div className="flex items-center gap-4 text-gray-400">
-              <button className="hover:text-gray-600 transition-colors">
-                <Moon size={20} />
-              </button>
-              <button className="hover:text-gray-600 transition-colors relative">
-                <Bell size={20} />
-                {useWorkspaceStore.getState().notificationsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white text-[9px] font-bold text-white flex items-center justify-center">
-                    {useWorkspaceStore.getState().notificationsCount}
-                  </span>
-                )}
-              </button>
+            <div className="flex items-center gap-3 cursor-pointer group">
+              <div className="flex flex-col items-end text-right hidden sm:flex">
+                <span className="text-sm font-bold text-gray-800 group-hover:text-indigo-600 transition-colors">
+                  {user?.name || "Loading..."}
+                </span>
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                  {user?.role || "Member"}
+                </span>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 text-sm font-bold shadow-sm uppercase group-hover:scale-105 transition-transform">
+                {user?.name?.substring(0, 2) || "??"}
+              </div>
             </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <div className="flex-1 overflow-y-auto bg-[#F8FAFC]">
+        <div className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950">
           <div className="p-8 w-full">{children}</div>
         </div>
       </main>

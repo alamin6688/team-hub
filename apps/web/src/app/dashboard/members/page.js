@@ -146,7 +146,7 @@ export default function MembersPage() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowInviteModal(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-[#1e1b4b] hover:bg-[#2e2a70] text-white rounded-2xl text-sm font-bold transition-all shadow-lg shadow-indigo-100"
+            className="btn-primary-dynamic flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-bold shadow-lg shadow-indigo-100"
           >
             <UserPlus size={20} strokeWidth={3} />
             Invite Member
@@ -432,9 +432,10 @@ export default function MembersPage() {
                         key={role}
                         type="button"
                         onClick={() => setInviteData({ ...inviteData, role })}
+                        style={inviteData.role === role ? { backgroundColor: 'var(--primary-brand)', borderColor: 'var(--primary-brand)' } : {}}
                         className={`py-4 rounded-2xl font-black text-xs uppercase tracking-widest border transition-all ${
                           inviteData.role === role
-                            ? "bg-[#1e1b4b] border-[#1e1b4b] text-white shadow-lg shadow-indigo-100"
+                            ? "text-white shadow-lg shadow-indigo-100"
                             : "bg-white border-slate-100 text-slate-400 hover:bg-slate-50"
                         }`}
                       >
@@ -455,7 +456,7 @@ export default function MembersPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex-[2] px-8 py-5 bg-[#1e1b4b] text-white font-bold rounded-2xl hover:bg-[#2e2a70] shadow-2xl shadow-indigo-100 transition-all active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-3"
+                    className="btn-primary-dynamic flex-[2] px-8 py-5 font-bold rounded-2xl shadow-2xl shadow-indigo-100 flex items-center justify-center gap-3"
                   >
                     {isSubmitting ? (
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>

@@ -20,4 +20,19 @@ router.get("/", auth(), async (req, res, next) => {
   }
 });
 
+router.patch("/read-all", auth(), async (req, res, next) => {
+  try {
+    await prisma.notification.updateMany({
+      where: { userId: req.user.id, read: false },
+      data: { read: true },
+    });
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: "All notifications marked as read",
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;
