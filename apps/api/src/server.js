@@ -27,6 +27,8 @@ io.on("connection", (socket) => {
   socket.on("join", (userId) => {
     socket.userId = userId;
     onlineUsers.set(userId, socket.id);
+    // Join a personal room for targeted notifications
+    socket.join(`user:${userId}`);
     io.emit("member-status-changed", { userId, isOnline: true });
     console.log(`User ${userId} is online`);
   });

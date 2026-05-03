@@ -70,18 +70,33 @@ const addReaction = async (req, res, next) => {
 
 const addComment = async (req, res, next) => {
   try {
-    const result = await AnnouncementService.addComment(req.params.id, req.user.id, req.body.content);
+    const { comment, notifiedUsers } = await AnnouncementService.addComment(
+      req.params.id,
+      req.user.id,
+      req.body.content
+    );
     
     if (global.io) {
+      // Broadcast the new comment to the whole workspace
       global.io.to(req.params.wsId).emit("announcement-comment-added", { 
         announcementId: req.params.id, 
-        comment: result 
+        comment 
       });
+
+      // Emit a personal notification to each @mentioned user
+      for (const userId of notifiedUsers) {
+        global.io.to(`user:${userId}`).emit("notification", {
+          type: "MENTION",
+          title: "You were mentioned!",
+          message: `${req.user.name} mentioned you in a comment.`,
+          link: `/dashboard/announcements`,
+        });
+      }
     }
 
     res.status(httpStatus.CREATED).json({
       success: true,
-      data: result,
+      data: comment,
     });
   } catch (error) {
     next(error);

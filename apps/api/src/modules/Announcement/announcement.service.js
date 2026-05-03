@@ -90,7 +90,8 @@ const addReaction = async (announcementId, userId, emoji) => {
 };
 
 const addComment = async (announcementId, authorId, content) => {
-  return await prisma.comment.create({
+  // 1. Create the comment
+  const comment = await prisma.comment.create({
     data: {
       content,
       announcementId,
@@ -102,6 +103,60 @@ const addComment = async (announcementId, authorId, content) => {
       },
     },
   });
+
+  // 2. Parse @mentions from the comment text (e.g. "@John Doe" or "@Jane")
+  const mentionRegex = /@([\w\s]+?)(?=\s@|\s*$|[^a-zA-Z\s])/g;
+  const rawMentions = [...content.matchAll(mentionRegex)].map((m) =>
+    m[1].trim().toLowerCase()
+  );
+
+  const notifiedUsers = [];
+
+  if (rawMentions.length > 0) {
+    // 3. Get the announcement to find its workspaceId
+    const announcement = await prisma.announcement.findUnique({
+      where: { id: announcementId },
+      select: { workspaceId: true },
+    });
+
+    if (announcement) {
+      // 4. Find workspace members whose names match any mention
+      const workspaceMembers = await prisma.workspaceMember.findMany({
+        where: { workspaceId: announcement.workspaceId },
+        include: {
+          user: { select: { id: true, name: true } },
+        },
+      });
+
+      for (const member of workspaceMembers) {
+        // Skip the author themselves
+        if (member.user.id === authorId) continue;
+
+        const memberNameLower = member.user.name.toLowerCase();
+        const isMentioned = rawMentions.some(
+          (mention) =>
+            memberNameLower === mention ||
+            memberNameLower.startsWith(mention) ||
+            mention.startsWith(memberNameLower)
+        );
+
+        if (isMentioned) {
+          // 5. Create notification record
+          await prisma.notification.create({
+            data: {
+              type: "MENTION",
+              message: `${comment.author.name} mentioned you in a comment: "${content.substring(0, 60)}${content.length > 60 ? '...' : ''}"`,
+              userId: member.user.id,
+              link: `/dashboard/announcements`,
+            },
+          });
+          notifiedUsers.push(member.user.id);
+        }
+      }
+    }
+  }
+
+  return { comment, notifiedUsers };
 };
 
 module.exports.AnnouncementService = {

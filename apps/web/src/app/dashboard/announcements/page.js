@@ -30,6 +30,8 @@ export default function AnnouncementsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [expandedPost, setExpandedPost] = useState(null);
   const [commentText, setCommentText] = useState("");
+  const [mentionQuery, setMentionQuery] = useState(null); // null = closed, string = active query
+  const [mentionAnchor, setMentionAnchor] = useState(0); // cursor position of '@'
   
   const [formData, setFormData] = useState({
     title: '',
@@ -75,10 +77,44 @@ export default function AnnouncementsPage() {
     try {
       await addComment(currentWorkspace.id, announcementId, commentText);
       setCommentText("");
+      setMentionQuery(null);
     } catch (error) {
       toast.error("Failed to add comment");
     }
   };
+
+  const handleCommentChange = (e) => {
+    const val = e.target.value;
+    setCommentText(val);
+    const cursor = e.target.selectionStart;
+    // Find the last '@' before the cursor
+    const textUpToCursor = val.slice(0, cursor);
+    const atIndex = textUpToCursor.lastIndexOf('@');
+    if (atIndex !== -1) {
+      const query = textUpToCursor.slice(atIndex + 1);
+      // Only show if no space in query (single word/name typing)
+      if (!query.includes(' ') || query.length < 15) {
+        setMentionQuery(query);
+        setMentionAnchor(atIndex);
+        return;
+      }
+    }
+    setMentionQuery(null);
+  };
+
+  const insertMention = (name) => {
+    const before = commentText.slice(0, mentionAnchor);
+    const after = commentText.slice(mentionAnchor + 1 + (mentionQuery?.length || 0));
+    setCommentText(`${before}@${name} ${after}`);
+    setMentionQuery(null);
+  };
+
+  const mentionSuggestions = mentionQuery !== null
+    ? (members || []).filter(m =>
+        m.user?.name?.toLowerCase().includes(mentionQuery.toLowerCase()) &&
+        m.userId !== user?.id
+      ).slice(0, 5)
+    : [];
 
   const getInitials = (name) => name?.split(' ').map(n => n[0]).join('').toUpperCase() || '??';
 
@@ -284,11 +320,14 @@ export default function AnnouncementsPage() {
                             <div className="flex-1 relative">
                               <input 
                                 type="text" 
-                                placeholder="Write a comment..."
+                                placeholder="Write a comment... Use @name to mention"
                                 className="w-full h-10 pl-4 pr-12 bg-white border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 transition-all shadow-sm"
                                 value={commentText}
-                                onChange={(e) => setCommentText(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && handleAddComment(announcement.id)}
+                                onChange={handleCommentChange}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' && mentionSuggestions.length === 0) handleAddComment(announcement.id);
+                                  if (e.key === 'Escape') setMentionQuery(null);
+                                }}
                               />
                               <button 
                                 onClick={() => handleAddComment(announcement.id)}
@@ -296,6 +335,25 @@ export default function AnnouncementsPage() {
                               >
                                 <Send size={18} />
                               </button>
+
+                              {/* @Mention Autocomplete Dropdown */}
+                              {mentionSuggestions.length > 0 && (
+                                <div className="absolute bottom-12 left-0 w-56 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden z-50">
+                                  <p className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-50">Mention a teammate</p>
+                                  {mentionSuggestions.map(m => (
+                                    <button
+                                      key={m.userId}
+                                      onMouseDown={(e) => { e.preventDefault(); insertMention(m.user.name); }}
+                                      className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-indigo-50 transition-colors text-left"
+                                    >
+                                      <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+                                        {getInitials(m.user?.name)}
+                                      </div>
+                                      <span className="text-sm font-semibold text-slate-700">{m.user?.name}</span>
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
