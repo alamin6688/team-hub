@@ -150,6 +150,19 @@ const blockMember = async (workspaceId, userId, isBlocked) => {
   });
 };
 
+const updateWorkspace = async (id, payload) => {
+  return await prisma.workspace.update({
+    where: { id },
+    data: payload,
+  });
+};
+
+const deleteWorkspace = async (id) => {
+  return await prisma.workspace.delete({
+    where: { id },
+  });
+};
+
 const createGoal = async (workspaceId, ownerId, payload) => {
   const data = {
     ...payload,
@@ -306,4 +319,6 @@ module.exports.WorkspaceService = {
   updateMemberRole,
   removeMember,
   blockMember,
+  updateWorkspace,
+  deleteWorkspace,
 };

@@ -9,7 +9,7 @@ const auth = (...requiredRoles) => {
         throw new Error("You are not authorized");
       }
 
-      const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET || "access_secret");
+      const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || "access_secret");
       req.user = decoded;
       
       next();

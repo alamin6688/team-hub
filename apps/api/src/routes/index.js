@@ -18,6 +18,10 @@ const moduleRoutes = [
     path: "/notifications",
     route: notificationRoutes,
   },
+  {
+    path: "/users",
+    route: require("../modules/User/user.routes"),
+  },
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));

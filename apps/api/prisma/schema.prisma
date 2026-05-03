@@ -41,6 +41,7 @@ model User {
   email         String    @unique
   password      String    // bcrypt hashed
   name          String
+  bio           String?
   avatarUrl     String?
   refreshToken  String?
   createdAt     DateTime  @default(now())

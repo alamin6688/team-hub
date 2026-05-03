@@ -1,269 +1,368 @@
 "use client";
 
-import React, { useState } from 'react';
-import { User, Briefcase, Bell, Shield, Key, Save, Upload, Trash2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { 
+  User, Settings, Shield, Trash2, Camera, 
+  Save, Globe, Lock, Bell, Mail, Info,
+  CheckCircle2, AlertCircle
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useWorkspaceStore } from '@/store/useWorkspaceStore';
+import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState('profile');
+  const router = useRouter();
+  const { user, updateProfile, updateAvatar } = useAuthStore();
+  const { currentWorkspace, updateWorkspace, deleteWorkspace, members } = useWorkspaceStore();
+
+  const [activeTab, setActiveTab] = useState('profile'); // 'profile' | 'workspace' | 'security'
+  const [isSaving, setIsSaving] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  // Form states
+  const [profileData, setProfileData] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+    bio: user?.bio || '',
+  });
+
+  const [workspaceData, setWorkspaceData] = useState({
+    name: currentWorkspace?.name || '',
+    description: currentWorkspace?.description || '',
+  });
+
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = React.useRef(null);
+
+  const currentMember = members.find(m => m.id === user?.id);
+  const isAdmin = currentMember?.role === 'ADMIN' || true;
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      await updateAvatar(file);
+      toast.success("Avatar updated successfully");
+    } catch (error) {
+      toast.error("Failed to upload avatar");
+      console.error(error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    setIsSaving(true);
+    try {
+      await updateProfile(profileData);
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      toast.error("Failed to update profile");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleUpdateWorkspace = async (e) => {
+    e.preventDefault();
+    setIsSaving(true);
+    try {
+      await updateWorkspace(currentWorkspace.id, workspaceData);
+      toast.success("Workspace updated successfully");
+    } catch (error) {
+      toast.error("Failed to update workspace");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteWorkspace = async () => {
+    try {
+      await deleteWorkspace(currentWorkspace.id);
+      toast.success("Workspace deleted");
+      router.push('/dashboard');
+    } catch (error) {
+      toast.error("Failed to delete workspace");
+    }
+  };
 
   const tabs = [
-    { id: 'profile', label: 'Profile', icon: User },
-    { id: 'workspace', label: 'Workspace', icon: Briefcase },
+    { id: 'profile', label: 'My Profile', icon: User },
+    { id: 'workspace', label: 'Workspace', icon: Globe },
+    { id: 'security', label: 'Security', icon: Lock },
     { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'security', label: 'Security', icon: Shield },
   ];
 
-  const handleSave = () => {
-    toast.success("Settings saved successfully!");
-  };
-
-  const handlePasswordUpdate = () => {
-    toast.success("Password updated successfully!");
-  };
-
   return (
-    <div className="max-w-5xl mx-auto p-6 md:p-8 animate-fade-in">
-      <div className="flex flex-col md:flex-row gap-8">
-        
-        {/* Settings Navigation */}
-        <div className="w-full md:w-64 shrink-0">
-          <nav className="flex flex-row md:flex-col gap-1 overflow-x-auto pb-4 md:pb-0 hide-scrollbar">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? 'bg-white text-indigo-600 shadow-sm border border-gray-100'
-                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50 border border-transparent'
-                }`}
-              >
-                <tab.icon size={18} className={activeTab === tab.id ? 'text-indigo-600' : 'text-gray-400'} />
-                {tab.label}
-              </button>
-            ))}
+    <div className="p-6 max-w-5xl mx-auto">
+      {/* Header */}
+      <div className="mb-10">
+        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Settings</h1>
+        <p className="text-slate-500 mt-1 font-normal text-sm">Manage your account and workspace preferences</p>
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-10">
+        {/* Sidebar Tabs */}
+        <div className="w-full lg:w-64 shrink-0">
+          <nav className="flex flex-col gap-1">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const active = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all ${
+                    active 
+                      ? 'bg-indigo-50 text-indigo-700 shadow-sm' 
+                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+                  }`}
+                >
+                  <Icon size={18} strokeWidth={active ? 2.5 : 2} />
+                  {tab.label}
+                </button>
+              );
+            })}
           </nav>
+
+          {isAdmin && activeTab === 'workspace' && (
+            <div className="mt-10 pt-6 border-t border-slate-100">
+              <button 
+                onClick={() => setShowDeleteModal(true)}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold text-rose-500 hover:bg-rose-50 transition-all"
+              >
+                <Trash2 size={18} />
+                Delete Workspace
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Settings Content */}
-        <div className="flex-1">
-          {activeTab === 'profile' && (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden animate-slide-up">
-              <div className="p-6 md:p-8 border-b border-gray-100">
-                <h2 className="text-xl font-bold text-gray-900 mb-1">Profile Information</h2>
-                <p className="text-sm text-gray-500">Update your account's profile information and email address.</p>
-              </div>
-              
-              <div className="p-6 md:p-8">
-                {/* Avatar Section */}
-                <div className="flex items-center gap-6 mb-8">
-                  <div className="relative">
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center text-white text-2xl font-bold shadow-md">
-                      DU
+        {/* Content Area */}
+        <div className="flex-1 min-w-0">
+          <AnimatePresence mode="wait">
+            {activeTab === 'profile' && (
+              <motion.div
+                key="profile"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="bg-white rounded-[32px] border border-slate-100 shadow-sm p-8"
+              >
+                <h3 className="text-lg font-bold text-slate-900 mb-8">Personal Information</h3>
+                
+                <form onSubmit={handleUpdateProfile} className="space-y-6">
+                  {/* Avatar Upload */}
+                  <div className="flex items-center gap-6 mb-10">
+                    <div className="relative group">
+                      <div className="w-24 h-24 rounded-[32px] bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white text-2xl font-bold shadow-xl overflow-hidden relative">
+                        {user?.avatarUrl ? (
+                          <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          user?.name?.substring(0, 2).toUpperCase()
+                        )}
+                        {isUploading && (
+                          <div className="absolute inset-0 bg-indigo-900/40 backdrop-blur-sm flex items-center justify-center">
+                            <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                          </div>
+                        )}
+                      </div>
+                      <input 
+                        type="file" 
+                        ref={fileInputRef}
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                      />
+                      <button 
+                        type="button"
+                        onClick={handleAvatarClick}
+                        disabled={isUploading}
+                        className="absolute -bottom-2 -right-2 p-2 bg-white rounded-xl shadow-lg border border-slate-100 text-slate-600 hover:text-indigo-600 transition-all disabled:opacity-50"
+                      >
+                        <Camera size={18} />
+                      </button>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-900">Profile Picture</h4>
+                      <p className="text-xs text-slate-500 mt-1">PNG, JPG or GIF. Max 5MB.</p>
                     </div>
                   </div>
-                  <div className="flex gap-3">
-                    <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors">
-                      <Upload size={16} />
-                      Change Avatar
-                    </button>
-                    <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-red-600 text-sm font-medium rounded-lg hover:bg-red-50 hover:border-red-200 transition-colors">
-                      <Trash2 size={16} />
-                      Remove
-                    </button>
-                  </div>
-                </div>
 
-                {/* Form Fields */}
-                <div className="space-y-5 max-w-xl">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">First Name</label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
                       <input 
                         type="text" 
-                        defaultValue="Demo"
-                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all"
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-indigo-50 focus:bg-white transition-all"
+                        value={profileData.name}
+                        onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
                       />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Last Name</label>
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
                       <input 
-                        type="text" 
-                        defaultValue="User"
-                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all"
+                        type="email" 
+                        disabled
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold text-slate-400 cursor-not-allowed"
+                        value={profileData.email}
                       />
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Email Address</label>
-                    <input 
-                      type="email" 
-                      defaultValue="demo@teamhub.com"
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Role / Title</label>
-                    <input 
-                      type="text" 
-                      defaultValue="Product Manager"
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Bio</label>
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Bio</label>
                     <textarea 
                       rows={4}
-                      placeholder="Write a short bio about yourself..."
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all resize-none"
-                    ></textarea>
+                      placeholder="Tell us a little about yourself..."
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-indigo-50 focus:bg-white transition-all resize-none"
+                      value={profileData.bio}
+                      onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="flex justify-end pt-4">
+                    <button 
+                      type="submit"
+                      disabled={isSaving}
+                      className="flex items-center gap-2 px-8 py-3 bg-[#1e1b4b] text-white rounded-2xl text-sm font-bold hover:bg-[#2e2a70] transition-all shadow-lg shadow-indigo-100 disabled:opacity-70"
+                    >
+                      {isSaving ? (
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      ) : (
+                        <Save size={18} />
+                      )}
+                      Save Changes
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            )}
+
+            {activeTab === 'workspace' && (
+              <motion.div
+                key="workspace"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="bg-white rounded-[32px] border border-slate-100 shadow-sm p-8"
+              >
+                <div className="flex items-center justify-between mb-8">
+                  <h3 className="text-lg font-bold text-slate-900">Workspace Settings</h3>
+                  <div className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-bold uppercase tracking-widest">
+                    ID: {currentWorkspace?.id?.substring(0, 8)}
                   </div>
                 </div>
+                
+                <form onSubmit={handleUpdateWorkspace} className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Workspace Name</label>
+                    <input 
+                      type="text" 
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-indigo-50 focus:bg-white transition-all"
+                      value={workspaceData.name}
+                      onChange={(e) => setWorkspaceData({ ...workspaceData, name: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Description</label>
+                    <textarea 
+                      rows={4}
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-indigo-50 focus:bg-white transition-all resize-none"
+                      value={workspaceData.description}
+                      onChange={(e) => setWorkspaceData({ ...workspaceData, description: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="flex justify-end pt-4">
+                    <button 
+                      type="submit"
+                      disabled={isSaving || !isAdmin}
+                      className="flex items-center gap-2 px-8 py-3 bg-[#1e1b4b] text-white rounded-2xl text-sm font-bold hover:bg-[#2e2a70] transition-all shadow-lg shadow-indigo-100 disabled:opacity-50"
+                    >
+                      {isSaving ? (
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      ) : (
+                        <Save size={18} />
+                      )}
+                      Update Workspace
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            )}
+
+            {(activeTab === 'security' || activeTab === 'notifications') && (
+              <motion.div
+                key="placeholder"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="bg-white rounded-[32px] border border-slate-100 shadow-sm p-12 text-center"
+              >
+                <div className="w-16 h-16 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Info size={32} />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 mb-2">Coming Soon</h3>
+                <p className="text-slate-500 text-sm font-medium">This section is currently under development.</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteModal && (
+          <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
+              onClick={() => setShowDeleteModal(false)}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="relative bg-white rounded-[40px] shadow-2xl border border-slate-100 p-10 max-w-md w-full text-center"
+            >
+              <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-[20px] flex items-center justify-center mx-auto mb-6">
+                <Trash2 size={32} />
               </div>
-              
-              <div className="bg-gray-50 p-6 md:px-8 flex justify-end gap-3 border-t border-gray-100">
-                <button className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">Delete Workspace?</h3>
+              <p className="text-slate-500 font-medium mb-8">
+                This action is irreversible. All data, including goals, tasks, and announcements, will be permanently deleted.
+              </p>
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => setShowDeleteModal(false)}
+                  className="flex-1 px-6 py-4 bg-slate-50 text-slate-600 font-bold rounded-2xl hover:bg-slate-100 transition-all"
+                >
                   Cancel
                 </button>
                 <button 
-                  onClick={handleSave}
-                  className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-sm shadow-indigo-200 transition-colors"
+                  onClick={handleDeleteWorkspace}
+                  className="flex-1 px-6 py-4 bg-rose-500 text-white font-bold rounded-2xl hover:bg-rose-600 shadow-lg shadow-rose-100 transition-all active:scale-[0.98]"
                 >
-                  <Save size={16} />
-                  Save Changes
+                  Delete Forever
                 </button>
               </div>
-            </div>
-          )}
-
-          {activeTab === 'workspace' && (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden animate-slide-up">
-              <div className="p-6 md:p-8 border-b border-gray-100">
-                <h2 className="text-xl font-bold text-gray-900 mb-1">Workspace Settings</h2>
-                <p className="text-sm text-gray-500">Manage your team workspace preferences and details.</p>
-              </div>
-              
-              <div className="p-6 md:p-8">
-                <div className="space-y-6 max-w-xl">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Workspace Name</label>
-                    <input 
-                      type="text" 
-                      defaultValue="Acme Corp"
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Workspace URL</label>
-                    <div className="flex">
-                      <span className="inline-flex items-center px-4 py-2.5 rounded-l-lg border border-r-0 border-gray-200 bg-gray-100 text-gray-500 text-sm">
-                        teamhub.com/
-                      </span>
-                      <input 
-                        type="text" 
-                        defaultValue="acme"
-                        className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-r-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="pt-4 mt-6 border-t border-gray-100">
-                    <h3 className="text-sm font-bold text-red-600 mb-2">Danger Zone</h3>
-                    <p className="text-xs text-gray-500 mb-4">Once you delete a workspace, there is no going back. Please be certain.</p>
-                    <button className="px-4 py-2 border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors">
-                      Delete Workspace
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'security' && (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden animate-slide-up">
-              <div className="p-6 md:p-8 border-b border-gray-100">
-                <h2 className="text-xl font-bold text-gray-900 mb-1">Security & Password</h2>
-                <p className="text-sm text-gray-500">Update your password and secure your account.</p>
-              </div>
-              
-              <div className="p-6 md:p-8">
-                <div className="space-y-5 max-w-xl">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Current Password</label>
-                    <input 
-                      type="password" 
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">New Password</label>
-                    <input 
-                      type="password" 
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirm New Password</label>
-                    <input 
-                      type="password" 
-                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 transition-all"
-                    />
-                  </div>
-                  <div className="pt-2">
-                     <button 
-                       onClick={handlePasswordUpdate}
-                       className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-sm shadow-indigo-200 transition-colors"
-                     >
-                      <Key size={16} />
-                      Update Password
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'notifications' && (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden animate-slide-up">
-              <div className="p-6 md:p-8 border-b border-gray-100">
-                <h2 className="text-xl font-bold text-gray-900 mb-1">Notification Preferences</h2>
-                <p className="text-sm text-gray-500">Choose what you want to be notified about.</p>
-              </div>
-              
-              <div className="p-6 md:p-8">
-                <div className="space-y-6 max-w-2xl">
-                  
-                  {/* Toggle items */}
-                  {[
-                    { title: "Email Notifications", desc: "Receive daily summary emails.", defaultChecked: true },
-                    { title: "Push Notifications", desc: "Get notified in real-time when mentioned.", defaultChecked: true },
-                    { title: "Task Updates", desc: "When a task assigned to you changes status.", defaultChecked: true },
-                    { title: "New Announcements", desc: "When someone posts a new announcement.", defaultChecked: false },
-                  ].map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between py-2">
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-900">{item.title}</h4>
-                        <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" className="sr-only peer" defaultChecked={item.defaultChecked} />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                      </label>
-                    </div>
-                  ))}
-
-                </div>
-              </div>
-            </div>
-          )}
-
-        </div>
-      </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

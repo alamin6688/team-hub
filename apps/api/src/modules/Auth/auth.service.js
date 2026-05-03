@@ -57,13 +57,13 @@ const login = async (loginData) => {
 
   const accessToken = jwt.sign(
     { id: user.id, email: user.email },
-    process.env.JWT_ACCESS_SECRET || "access_secret",
+    process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || "access_secret",
     { expiresIn: "15m" }
   );
 
   const refreshToken = jwt.sign(
     { id: user.id, email: user.email },
-    process.env.JWT_REFRESH_SECRET || "refresh_secret",
+    process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || "refresh_secret",
     { expiresIn: "7d" }
   );
 
@@ -83,14 +83,14 @@ const refreshToken = async (token) => {
   if (!token) throw new Error("Refresh token required");
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET || "refresh_secret");
+    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || "refresh_secret");
     const user = await prisma.user.findUnique({ where: { id: decoded.id } });
 
     if (!user) throw new Error("User not found");
 
     const accessToken = jwt.sign(
       { id: user.id, email: user.email },
-      process.env.JWT_ACCESS_SECRET || "access_secret",
+      process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || "access_secret",
       { expiresIn: "15m" }
     );
 

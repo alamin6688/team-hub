@@ -277,6 +277,30 @@ const blockMember = async (req, res, next) => {
   }
 };
 
+const updateWorkspace = async (req, res, next) => {
+  try {
+    const result = await WorkspaceService.updateWorkspace(req.params.id, req.body);
+    res.status(httpStatus.OK).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteWorkspace = async (req, res, next) => {
+  try {
+    await WorkspaceService.deleteWorkspace(req.params.id);
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: "Workspace deleted",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports.WorkspaceController = {
   getAllWorkspaces,
   initializeDefaultWorkspace,
@@ -300,4 +324,6 @@ module.exports.WorkspaceController = {
   updateMemberRole,
   removeMember,
   blockMember,
+  updateWorkspace,
+  deleteWorkspace,
 };

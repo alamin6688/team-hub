@@ -242,6 +242,34 @@ export const useWorkspaceStore = create(
           throw error;
         }
       },
+
+      updateWorkspace: async (workspaceId, data) => {
+        const { fetchWithAuth } = await import("@/lib/api");
+        try {
+          const response = await fetchWithAuth(`/workspaces/${workspaceId}`, {
+            method: "PATCH",
+            body: JSON.stringify(data),
+          });
+          set({ currentWorkspace: response.data });
+          return response.data;
+        } catch (error) {
+          console.error("Update workspace error:", error);
+          throw error;
+        }
+      },
+
+      deleteWorkspace: async (workspaceId) => {
+        const { fetchWithAuth } = await import("@/lib/api");
+        try {
+          await fetchWithAuth(`/workspaces/${workspaceId}`, {
+            method: "DELETE",
+          });
+          set({ currentWorkspace: null });
+        } catch (error) {
+          console.error("Delete workspace error:", error);
+          throw error;
+        }
+      },
     }),
     {
       name: "workspace-storage",

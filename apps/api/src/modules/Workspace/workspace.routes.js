@@ -36,4 +36,7 @@ router.patch("/:id/members/:userId", auth(), WorkspaceController.updateMemberRol
 router.delete("/:id/members/:userId", auth(), WorkspaceController.removeMember);
 router.patch("/:id/members/:userId/block", auth(), WorkspaceController.blockMember);
 
+router.patch("/:id", auth(), WorkspaceController.updateWorkspace);
+router.delete("/:id", auth(), WorkspaceController.deleteWorkspace);
+
 module.exports = router;
