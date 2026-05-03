@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
+import Cookies from "js-cookie";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -37,9 +39,15 @@ export default function LoginPage() {
         throw new Error(data.message || "Invalid credentials");
       }
 
-      // Success - In a real app we'd save the token here
+      // Success
+      const token = data.data?.accessToken;
+      if (token) {
+        Cookies.set("token", token, { expires: 7, path: "/" });
+      }
+      toast.success("Welcome back!");
       router.push("/dashboard");
     } catch (err) {
+      toast.error(err.message || "Invalid credentials");
       setError(err.message);
     } finally {
       setIsLoading(false);
@@ -52,12 +60,6 @@ export default function LoginPage() {
         <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
         <p className="text-slate-500 mt-1">Sign in to your account</p>
       </div>
-
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl animate-shake">
-          {error}
-        </div>
-      )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>

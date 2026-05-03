@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -22,6 +23,7 @@ export default function RegisterPage() {
     setError("");
     
     if (formData.password !== formData.confirmPassword) {
+      toast.error("Passwords do not match");
       setError("Passwords do not match");
       return;
     }
@@ -45,9 +47,11 @@ export default function RegisterPage() {
         throw new Error(data.message || "Failed to register");
       }
 
-      // Success - Redirect to dashboard
-      router.push("/dashboard");
+      // Success
+      toast.success("Account created! Please sign in to continue.");
+      router.push("/login");
     } catch (err) {
+      toast.error(err.message || "Failed to register");
       setError(err.message);
     } finally {
       setIsLoading(false);
@@ -60,12 +64,6 @@ export default function RegisterPage() {
         <h1 className="text-2xl font-bold text-slate-900">Create account</h1>
         <p className="text-slate-500 mt-1">Start collaborating with your team</p>
       </div>
-
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl animate-shake">
-          {error}
-        </div>
-      )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>

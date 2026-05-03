@@ -2,7 +2,9 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
+import toast from 'react-hot-toast';
 import { 
   Hexagon, ChevronDown, LayoutGrid, Target, CheckSquare, Megaphone, 
   Settings, Search, Moon, Bell, Users, LogOut, BarChart3
@@ -10,12 +12,20 @@ import {
 
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [showLogoutModal, setShowLogoutModal] = React.useState(false);
+
+  const handleLogout = () => {
+    Cookies.remove('token', { path: '/' });
+    toast.success('Logged out successfully');
+    router.push('/login');
+  };
 
   return (
-    <div className="flex min-h-screen bg-[#F8FAFC]">
+    <div className="flex h-screen overflow-hidden bg-[#F8FAFC]">
       {/* Sidebar */}
-      <aside className="w-[260px] bg-white border-r border-gray-100 flex flex-col justify-between">
-        <div>
+      <aside className="w-[260px] bg-white border-r border-gray-100 flex flex-col h-full">
+        <div className="flex-1 flex flex-col min-h-0">
           {/* Logo & Workspace Dropdown */}
           <div className="h-[72px] flex items-center px-6 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors">
             <div className="flex items-center justify-center w-8 h-8 rounded bg-indigo-600 text-white mr-3">
@@ -26,7 +36,7 @@ export default function DashboardLayout({ children }) {
           </div>
 
           {/* Navigation */}
-          <div className="p-4">
+          <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
             <div className="text-xs font-semibold text-gray-400 tracking-wider mb-4 px-2">WORKSPACE</div>
             <nav className="flex flex-col gap-1">
               {[
@@ -60,7 +70,7 @@ export default function DashboardLayout({ children }) {
           </div>
         </div>
 
-        <div>
+        <div className="shrink-0">
           {/* Online Users */}
           <div className="px-6 pb-6">
             <div className="text-[11px] font-bold text-gray-400 tracking-wider mb-3">ONLINE - 4</div>
@@ -95,10 +105,46 @@ export default function DashboardLayout({ children }) {
                 <span className="text-[11px] font-medium text-gray-500">demo@teamhub.com</span>
               </div>
             </div>
-            <LogOut size={18} className="text-gray-400 hover:text-gray-600 transition-colors" />
+            <button 
+              onClick={() => setShowLogoutModal(true)}
+              className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+            >
+              <LogOut size={18} />
+            </button>
           </div>
         </div>
       </aside>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div 
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-fade-in"
+            onClick={() => setShowLogoutModal(false)}
+          ></div>
+          <div className="relative bg-white rounded-2xl shadow-2xl border border-slate-100 p-8 max-w-sm w-full animate-scale-in">
+            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center text-red-600 mb-6 mx-auto">
+              <LogOut size={32} />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 text-center mb-2">Sign Out</h3>
+            <p className="text-slate-500 text-center mb-8">Are you sure you want to log out of your account?</p>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setShowLogoutModal(false)}
+                className="flex-1 px-4 py-3 bg-slate-50 text-slate-600 font-semibold rounded-xl hover:bg-slate-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleLogout}
+                className="flex-1 px-4 py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 shadow-lg shadow-red-200 transition-colors"
+              >
+                Yes, Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0">

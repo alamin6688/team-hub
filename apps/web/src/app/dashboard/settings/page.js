@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { User, Briefcase, Bell, Shield, Key, Save, Upload, Trash2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('profile');
@@ -12,6 +13,14 @@ export default function SettingsPage() {
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'security', label: 'Security', icon: Shield },
   ];
+
+  const handleSave = () => {
+    toast.success("Settings saved successfully!");
+  };
+
+  const handlePasswordUpdate = () => {
+    toast.success("Password updated successfully!");
+  };
 
   return (
     <div className="max-w-5xl mx-auto p-6 md:p-8 animate-fade-in">
@@ -120,7 +129,10 @@ export default function SettingsPage() {
                 <button className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                   Cancel
                 </button>
-                <button className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-sm shadow-indigo-200 transition-colors">
+                <button 
+                  onClick={handleSave}
+                  className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-sm shadow-indigo-200 transition-colors"
+                >
                   <Save size={16} />
                   Save Changes
                 </button>
@@ -203,7 +215,10 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="pt-2">
-                     <button className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-sm shadow-indigo-200 transition-colors">
+                     <button 
+                       onClick={handlePasswordUpdate}
+                       className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 shadow-sm shadow-indigo-200 transition-colors"
+                     >
                       <Key size={16} />
                       Update Password
                     </button>
