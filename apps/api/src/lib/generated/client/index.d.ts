@@ -2200,6 +2200,7 @@ export namespace Prisma {
     name: string | null
     bio: string | null
     avatarUrl: string | null
+    role: $Enums.Role | null
     refreshToken: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -2212,6 +2213,7 @@ export namespace Prisma {
     name: string | null
     bio: string | null
     avatarUrl: string | null
+    role: $Enums.Role | null
     refreshToken: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -2224,6 +2226,7 @@ export namespace Prisma {
     name: number
     bio: number
     avatarUrl: number
+    role: number
     refreshToken: number
     createdAt: number
     updatedAt: number
@@ -2238,6 +2241,7 @@ export namespace Prisma {
     name?: true
     bio?: true
     avatarUrl?: true
+    role?: true
     refreshToken?: true
     createdAt?: true
     updatedAt?: true
@@ -2250,6 +2254,7 @@ export namespace Prisma {
     name?: true
     bio?: true
     avatarUrl?: true
+    role?: true
     refreshToken?: true
     createdAt?: true
     updatedAt?: true
@@ -2262,6 +2267,7 @@ export namespace Prisma {
     name?: true
     bio?: true
     avatarUrl?: true
+    role?: true
     refreshToken?: true
     createdAt?: true
     updatedAt?: true
@@ -2347,6 +2353,7 @@ export namespace Prisma {
     name: string
     bio: string | null
     avatarUrl: string | null
+    role: $Enums.Role
     refreshToken: string | null
     createdAt: Date
     updatedAt: Date
@@ -2376,6 +2383,7 @@ export namespace Prisma {
     name?: boolean
     bio?: boolean
     avatarUrl?: boolean
+    role?: boolean
     refreshToken?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -2398,6 +2406,7 @@ export namespace Prisma {
     name?: boolean
     bio?: boolean
     avatarUrl?: boolean
+    role?: boolean
     refreshToken?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -2410,6 +2419,7 @@ export namespace Prisma {
     name?: boolean
     bio?: boolean
     avatarUrl?: boolean
+    role?: boolean
     refreshToken?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -2422,12 +2432,13 @@ export namespace Prisma {
     name?: boolean
     bio?: boolean
     avatarUrl?: boolean
+    role?: boolean
     refreshToken?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "password" | "name" | "bio" | "avatarUrl" | "refreshToken" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "password" | "name" | "bio" | "avatarUrl" | "role" | "refreshToken" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     memberships?: boolean | User$membershipsArgs<ExtArgs>
     ownedGoals?: boolean | User$ownedGoalsArgs<ExtArgs>
@@ -2463,6 +2474,7 @@ export namespace Prisma {
       name: string
       bio: string | null
       avatarUrl: string | null
+      role: $Enums.Role
       refreshToken: string | null
       createdAt: Date
       updatedAt: Date
@@ -2904,6 +2916,7 @@ export namespace Prisma {
     readonly name: FieldRef<"User", 'String'>
     readonly bio: FieldRef<"User", 'String'>
     readonly avatarUrl: FieldRef<"User", 'String'>
+    readonly role: FieldRef<"User", 'Role'>
     readonly refreshToken: FieldRef<"User", 'String'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
@@ -15929,6 +15942,7 @@ export namespace Prisma {
     name: 'name',
     bio: 'bio',
     avatarUrl: 'avatarUrl',
+    role: 'role',
     refreshToken: 'refreshToken',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -16140,20 +16154,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'DateTime'
-   */
-  export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
-    
-
-
-  /**
-   * Reference to a field of type 'DateTime[]'
-   */
-  export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
-    
-
-
-  /**
    * Reference to a field of type 'Role'
    */
   export type EnumRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Role'>
@@ -16164,6 +16164,20 @@ export namespace Prisma {
    * Reference to a field of type 'Role[]'
    */
   export type ListEnumRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Role[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'DateTime'
+   */
+  export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
+    
+
+
+  /**
+   * Reference to a field of type 'DateTime[]'
+   */
+  export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
     
 
 
@@ -16271,6 +16285,7 @@ export namespace Prisma {
     name?: StringFilter<"User"> | string
     bio?: StringNullableFilter<"User"> | string | null
     avatarUrl?: StringNullableFilter<"User"> | string | null
+    role?: EnumRoleFilter<"User"> | $Enums.Role
     refreshToken?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
@@ -16292,6 +16307,7 @@ export namespace Prisma {
     name?: SortOrder
     bio?: SortOrderInput | SortOrder
     avatarUrl?: SortOrderInput | SortOrder
+    role?: SortOrder
     refreshToken?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -16316,6 +16332,7 @@ export namespace Prisma {
     name?: StringFilter<"User"> | string
     bio?: StringNullableFilter<"User"> | string | null
     avatarUrl?: StringNullableFilter<"User"> | string | null
+    role?: EnumRoleFilter<"User"> | $Enums.Role
     refreshToken?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
@@ -16337,6 +16354,7 @@ export namespace Prisma {
     name?: SortOrder
     bio?: SortOrderInput | SortOrder
     avatarUrl?: SortOrderInput | SortOrder
+    role?: SortOrder
     refreshToken?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -16355,6 +16373,7 @@ export namespace Prisma {
     name?: StringWithAggregatesFilter<"User"> | string
     bio?: StringNullableWithAggregatesFilter<"User"> | string | null
     avatarUrl?: StringNullableWithAggregatesFilter<"User"> | string | null
+    role?: EnumRoleWithAggregatesFilter<"User"> | $Enums.Role
     refreshToken?: StringNullableWithAggregatesFilter<"User"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -17135,6 +17154,7 @@ export namespace Prisma {
     name: string
     bio?: string | null
     avatarUrl?: string | null
+    role?: $Enums.Role
     refreshToken?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -17156,6 +17176,7 @@ export namespace Prisma {
     name: string
     bio?: string | null
     avatarUrl?: string | null
+    role?: $Enums.Role
     refreshToken?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -17177,6 +17198,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -17198,6 +17220,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -17219,6 +17242,7 @@ export namespace Prisma {
     name: string
     bio?: string | null
     avatarUrl?: string | null
+    role?: $Enums.Role
     refreshToken?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -17231,6 +17255,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -17243,6 +17268,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -18062,6 +18088,13 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
+  export type EnumRoleFilter<$PrismaModel = never> = {
+    equals?: $Enums.Role | EnumRoleFieldRefInput<$PrismaModel>
+    in?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
+    not?: NestedEnumRoleFilter<$PrismaModel> | $Enums.Role
+  }
+
   export type DateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -18175,6 +18208,7 @@ export namespace Prisma {
     name?: SortOrder
     bio?: SortOrder
     avatarUrl?: SortOrder
+    role?: SortOrder
     refreshToken?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -18187,6 +18221,7 @@ export namespace Prisma {
     name?: SortOrder
     bio?: SortOrder
     avatarUrl?: SortOrder
+    role?: SortOrder
     refreshToken?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -18199,6 +18234,7 @@ export namespace Prisma {
     name?: SortOrder
     bio?: SortOrder
     avatarUrl?: SortOrder
+    role?: SortOrder
     refreshToken?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -18240,6 +18276,16 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
+  export type EnumRoleWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Role | EnumRoleFieldRefInput<$PrismaModel>
+    in?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
+    not?: NestedEnumRoleWithAggregatesFilter<$PrismaModel> | $Enums.Role
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumRoleFilter<$PrismaModel>
+    _max?: NestedEnumRoleFilter<$PrismaModel>
+  }
+
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -18279,13 +18325,6 @@ export namespace Prisma {
     accentColor?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-  }
-
-  export type EnumRoleFilter<$PrismaModel = never> = {
-    equals?: $Enums.Role | EnumRoleFieldRefInput<$PrismaModel>
-    in?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
-    notIn?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
-    not?: NestedEnumRoleFilter<$PrismaModel> | $Enums.Role
   }
 
   export type BoolFilter<$PrismaModel = never> = {
@@ -18333,16 +18372,6 @@ export namespace Prisma {
     userId?: SortOrder
     workspaceId?: SortOrder
     joinedAt?: SortOrder
-  }
-
-  export type EnumRoleWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.Role | EnumRoleFieldRefInput<$PrismaModel>
-    in?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
-    notIn?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
-    not?: NestedEnumRoleWithAggregatesFilter<$PrismaModel> | $Enums.Role
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumRoleFilter<$PrismaModel>
-    _max?: NestedEnumRoleFilter<$PrismaModel>
   }
 
   export type BoolWithAggregatesFilter<$PrismaModel = never> = {
@@ -18954,6 +18983,10 @@ export namespace Prisma {
     set?: string | null
   }
 
+  export type EnumRoleFieldUpdateOperationsInput = {
+    set?: $Enums.Role
+  }
+
   export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string
   }
@@ -19430,10 +19463,6 @@ export namespace Prisma {
     create?: XOR<WorkspaceCreateWithoutMembersInput, WorkspaceUncheckedCreateWithoutMembersInput>
     connectOrCreate?: WorkspaceCreateOrConnectWithoutMembersInput
     connect?: WorkspaceWhereUniqueInput
-  }
-
-  export type EnumRoleFieldUpdateOperationsInput = {
-    set?: $Enums.Role
   }
 
   export type BoolFieldUpdateOperationsInput = {
@@ -19960,6 +19989,13 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
+  export type NestedEnumRoleFilter<$PrismaModel = never> = {
+    equals?: $Enums.Role | EnumRoleFieldRefInput<$PrismaModel>
+    in?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
+    not?: NestedEnumRoleFilter<$PrismaModel> | $Enums.Role
+  }
+
   export type NestedDateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -20027,6 +20063,16 @@ export namespace Prisma {
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
+  export type NestedEnumRoleWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Role | EnumRoleFieldRefInput<$PrismaModel>
+    in?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
+    not?: NestedEnumRoleWithAggregatesFilter<$PrismaModel> | $Enums.Role
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumRoleFilter<$PrismaModel>
+    _max?: NestedEnumRoleFilter<$PrismaModel>
+  }
+
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -20041,26 +20087,9 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
-  export type NestedEnumRoleFilter<$PrismaModel = never> = {
-    equals?: $Enums.Role | EnumRoleFieldRefInput<$PrismaModel>
-    in?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
-    notIn?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
-    not?: NestedEnumRoleFilter<$PrismaModel> | $Enums.Role
-  }
-
   export type NestedBoolFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>
     not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
-  export type NestedEnumRoleWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.Role | EnumRoleFieldRefInput<$PrismaModel>
-    in?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
-    notIn?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
-    not?: NestedEnumRoleWithAggregatesFilter<$PrismaModel> | $Enums.Role
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumRoleFilter<$PrismaModel>
-    _max?: NestedEnumRoleFilter<$PrismaModel>
   }
 
   export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
@@ -20971,6 +21000,7 @@ export namespace Prisma {
     name: string
     bio?: string | null
     avatarUrl?: string | null
+    role?: $Enums.Role
     refreshToken?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -20991,6 +21021,7 @@ export namespace Prisma {
     name: string
     bio?: string | null
     avatarUrl?: string | null
+    role?: $Enums.Role
     refreshToken?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -21058,6 +21089,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21078,6 +21110,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21135,6 +21168,7 @@ export namespace Prisma {
     name: string
     bio?: string | null
     avatarUrl?: string | null
+    role?: $Enums.Role
     refreshToken?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -21155,6 +21189,7 @@ export namespace Prisma {
     name: string
     bio?: string | null
     avatarUrl?: string | null
+    role?: $Enums.Role
     refreshToken?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -21310,6 +21345,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21330,6 +21366,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21520,6 +21557,7 @@ export namespace Prisma {
     name: string
     bio?: string | null
     avatarUrl?: string | null
+    role?: $Enums.Role
     refreshToken?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -21540,6 +21578,7 @@ export namespace Prisma {
     name: string
     bio?: string | null
     avatarUrl?: string | null
+    role?: $Enums.Role
     refreshToken?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -21640,6 +21679,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21660,6 +21700,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21787,6 +21828,7 @@ export namespace Prisma {
     name: string
     bio?: string | null
     avatarUrl?: string | null
+    role?: $Enums.Role
     refreshToken?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -21807,6 +21849,7 @@ export namespace Prisma {
     name: string
     bio?: string | null
     avatarUrl?: string | null
+    role?: $Enums.Role
     refreshToken?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -21926,6 +21969,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21946,6 +21990,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21998,6 +22043,7 @@ export namespace Prisma {
     name: string
     bio?: string | null
     avatarUrl?: string | null
+    role?: $Enums.Role
     refreshToken?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -22018,6 +22064,7 @@ export namespace Prisma {
     name: string
     bio?: string | null
     avatarUrl?: string | null
+    role?: $Enums.Role
     refreshToken?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -22083,6 +22130,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22103,6 +22151,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22158,6 +22207,7 @@ export namespace Prisma {
     name: string
     bio?: string | null
     avatarUrl?: string | null
+    role?: $Enums.Role
     refreshToken?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -22178,6 +22228,7 @@ export namespace Prisma {
     name: string
     bio?: string | null
     avatarUrl?: string | null
+    role?: $Enums.Role
     refreshToken?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -22243,6 +22294,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22263,6 +22315,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22351,6 +22404,7 @@ export namespace Prisma {
     name: string
     bio?: string | null
     avatarUrl?: string | null
+    role?: $Enums.Role
     refreshToken?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -22371,6 +22425,7 @@ export namespace Prisma {
     name: string
     bio?: string | null
     avatarUrl?: string | null
+    role?: $Enums.Role
     refreshToken?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -22446,6 +22501,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22466,6 +22522,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22486,6 +22543,7 @@ export namespace Prisma {
     name: string
     bio?: string | null
     avatarUrl?: string | null
+    role?: $Enums.Role
     refreshToken?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -22506,6 +22564,7 @@ export namespace Prisma {
     name: string
     bio?: string | null
     avatarUrl?: string | null
+    role?: $Enums.Role
     refreshToken?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -22542,6 +22601,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22562,6 +22622,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22582,6 +22643,7 @@ export namespace Prisma {
     name: string
     bio?: string | null
     avatarUrl?: string | null
+    role?: $Enums.Role
     refreshToken?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -22602,6 +22664,7 @@ export namespace Prisma {
     name: string
     bio?: string | null
     avatarUrl?: string | null
+    role?: $Enums.Role
     refreshToken?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -22669,6 +22732,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22689,6 +22753,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     bio?: NullableStringFieldUpdateOperationsInput | string | null
     avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

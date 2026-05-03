@@ -23,6 +23,7 @@ const register = async (userData) => {
       email: true,
       name: true,
       avatarUrl: true,
+      role: true,
     },
   });
 
@@ -56,13 +57,13 @@ const login = async (loginData) => {
   }
 
   const accessToken = jwt.sign(
-    { id: user.id, email: user.email },
+    { id: user.id, email: user.email, role: user.role },
     process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || "access_secret",
     { expiresIn: "15m" }
   );
 
   const refreshToken = jwt.sign(
-    { id: user.id, email: user.email },
+    { id: user.id, email: user.email, role: user.role },
     process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || "refresh_secret",
     { expiresIn: "7d" }
   );
@@ -75,6 +76,7 @@ const login = async (loginData) => {
       email: user.email,
       name: user.name,
       avatarUrl: user.avatarUrl,
+      role: user.role,
     },
   };
 };
@@ -89,7 +91,7 @@ const refreshToken = async (token) => {
     if (!user) throw new Error("User not found");
 
     const accessToken = jwt.sign(
-      { id: user.id, email: user.email },
+      { id: user.id, email: user.email, role: user.role },
       process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || "access_secret",
       { expiresIn: "15m" }
     );
@@ -108,6 +110,7 @@ const getUserById = async (id) => {
       email: true,
       name: true,
       avatarUrl: true,
+      role: true,
     },
   });
 };

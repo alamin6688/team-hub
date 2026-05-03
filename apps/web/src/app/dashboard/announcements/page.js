@@ -9,6 +9,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import toast from 'react-hot-toast';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const EMOJI_OPTIONS = ["👍", "❤️", "🎉", "🚀", "🔥"];
 
@@ -41,7 +43,7 @@ export default function AnnouncementsPage() {
     }
   }, [currentWorkspace?.id]);
 
-  const isAdmin = members.find(m => m.userId === user?.id)?.role === 'ADMIN' || true;
+  const isAdmin = members.find(m => m.userId === user?.id)?.role === 'ADMIN' || user?.role === 'ADMIN';
 
   const handlePost = async (e) => {
     e.preventDefault();
@@ -163,8 +165,22 @@ export default function AnnouncementsPage() {
                     </div>
 
                     <h3 className="text-xl font-bold text-slate-900 mb-3 leading-tight">{announcement.title}</h3>
-                    <div className="text-slate-600 leading-relaxed whitespace-pre-wrap">
-                      {announcement.content}
+                    <div className="text-slate-600 leading-relaxed max-w-none">
+                      <ReactMarkdown 
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          strong: ({node, ...props}) => <span className="font-black text-slate-900" {...props} />,
+                          em: ({node, ...props}) => <span className="italic text-slate-800 underline decoration-indigo-200 underline-offset-2" {...props} />,
+                          a: ({node, ...props}) => <a className="text-indigo-600 font-bold hover:underline" target="_blank" {...props} />,
+                          ul: ({node, ...props}) => <ul className="list-disc ml-4 space-y-1 my-2" {...props} />,
+                          ol: ({node, ...props}) => <ol className="list-decimal ml-4 space-y-1 my-2" {...props} />,
+                          li: ({node, ...props}) => <li className="pl-1" {...props} />,
+                          blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-indigo-200 pl-4 py-1 italic bg-indigo-50/30 rounded-r-lg my-3" {...props} />,
+                          p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
+                        }}
+                      >
+                        {announcement.content}
+                      </ReactMarkdown>
                     </div>
 
                     <div className="mt-8 pt-6 border-t border-slate-50 flex flex-wrap items-center justify-between gap-4">
@@ -345,7 +361,7 @@ export default function AnnouncementsPage() {
                       required
                       value={formData.content}
                       onChange={(e) => setFormData({...formData, content: e.target.value})}
-                      className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-base font-medium focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:bg-white focus:border-indigo-400 transition-all h-40 resize-none"
+                      className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-3xl text-base font-medium focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:bg-white focus:border-indigo-400 transition-all h-48 resize-none"
                       placeholder="What's the news?"
                     />
                   </div>

@@ -43,6 +43,7 @@ model User {
   name         String
   bio          String?
   avatarUrl    String?
+  role         Role     @default(MEMBER)
   refreshToken String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
