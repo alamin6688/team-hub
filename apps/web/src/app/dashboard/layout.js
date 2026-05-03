@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
   Hexagon, ChevronDown, LayoutGrid, Target, CheckSquare, Megaphone, 
-  Settings, Search, Moon, Bell, Users, LogOut
+  Settings, Search, Moon, Bell, Users, LogOut, BarChart3
 } from "lucide-react";
 
 export default function DashboardLayout({ children }) {
@@ -35,6 +35,8 @@ export default function DashboardLayout({ children }) {
                 { name: "Action Items", href: "/dashboard/tasks", icon: CheckSquare },
                 { name: "Announcements", href: "/dashboard/announcements", icon: Megaphone },
                 { name: "Members", href: "/dashboard/members", icon: Users },
+                { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
+                { name: "Settings", href: "/dashboard/settings", icon: Settings },
               ].map((item) => {
                 const active = pathname === item.href;
                 return (
@@ -107,7 +109,9 @@ export default function DashboardLayout({ children }) {
              pathname === '/dashboard/goals' ? 'Goals' :
              pathname === '/dashboard/tasks' ? 'Action Items' :
              pathname === '/dashboard/announcements' ? 'Announcements' :
-             pathname === '/dashboard/members' ? 'Members' : 'Dashboard'}
+             pathname === '/dashboard/members' ? 'Members' : 
+             pathname === '/dashboard/analytics' ? 'Analytics' : 
+             pathname === '/dashboard/settings' ? 'Settings' : 'Dashboard'}
           </h1>
           
           <div className="flex items-center gap-6">

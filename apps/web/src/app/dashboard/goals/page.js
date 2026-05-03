@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import Link from 'next/link';
 import { Filter, Plus } from 'lucide-react';
 
 const goalsData = [
@@ -89,7 +90,11 @@ export default function GoalsPage() {
           <tbody className="divide-y divide-gray-100">
             {goalsData.map((goal) => (
               <tr key={goal.id} className="hover:bg-gray-50/50 transition-colors">
-                <td className="px-6 py-4 font-medium text-gray-800">{goal.name}</td>
+                <td className="px-6 py-4 font-medium text-gray-800">
+                  <Link href={`/dashboard/goals/${goal.id}`} className="hover:text-indigo-600 transition-colors">
+                    {goal.name}
+                  </Link>
+                </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
                     <div className="w-32 h-2 bg-gray-100 rounded-full overflow-hidden">
