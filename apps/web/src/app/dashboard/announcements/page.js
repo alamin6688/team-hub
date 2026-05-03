@@ -119,11 +119,12 @@ export default function AnnouncementsPage() {
   const getInitials = (name) => name?.split(' ').map(n => n[0]).join('').toUpperCase() || '??';
 
   return (
-    <div className="p-6 max-w-5xl mx-auto min-h-full">
+    <div className="min-h-full">
       {/* Header section */}
       <motion.div 
-        initial={{ opacity: 0, y: -20 }}
+        initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
         className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4"
       >
         <div>
@@ -136,7 +137,7 @@ export default function AnnouncementsPage() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-[#f43f5e] hover:bg-[#e11d48] text-white rounded-2xl text-sm font-bold transition-all shadow-lg shadow-rose-100"
+            className="flex items-center gap-2 px-6 py-3 bg-[#1e1b4b] hover:bg-[#2e2a70] text-white rounded-2xl text-sm font-bold transition-all shadow-lg shadow-indigo-100"
           >
             <Plus size={20} strokeWidth={3} />
             Post Announcement
@@ -164,10 +165,9 @@ export default function AnnouncementsPage() {
               
               return (
                 <motion.div 
-                  layout
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.2 }}
                   key={announcement.id}
                   className={`bg-white rounded-[32px] border transition-all duration-500 ${
                     announcement.pinned 
@@ -281,6 +281,7 @@ export default function AnnouncementsPage() {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: "circOut" }}
                         className="overflow-hidden border-t border-slate-50 bg-slate-50/30 rounded-b-[32px]"
                       >
                         <div className="p-8 space-y-6">
@@ -289,9 +290,8 @@ export default function AnnouncementsPage() {
                             <AnimatePresence mode="popLayout">
                               {announcement.comments?.map((comment) => (
                                 <motion.div 
-                                  layout
-                                  initial={{ opacity: 0, x: -10 }}
-                                  animate={{ opacity: 1, x: 0 }}
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
                                   key={comment.id} 
                                   className="flex gap-4"
                                 >
@@ -379,9 +379,10 @@ export default function AnnouncementsPage() {
               onClick={() => setShowModal(false)}
             />
             <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.98, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              exit={{ opacity: 0, scale: 0.98, y: 15 }}
+              transition={{ duration: 0.25, ease: "circOut" }}
               className="relative bg-white rounded-[40px] shadow-2xl border border-slate-100 p-10 max-w-2xl w-full"
             >
               <button 

@@ -5,8 +5,11 @@ import { Toaster } from "react-hot-toast";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Collaborative Team Hub",
+  title: "Team Hub",
   description: "All-in-one platform for team collaboration",
+  icons: {
+    icon: '/icon.svg',
+  },
 };
 
 export default function RootLayout({ children }) {

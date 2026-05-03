@@ -75,7 +75,7 @@ export default function AnalyticsPage() {
   if (!data) return null;
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div>
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
         <div>
@@ -84,9 +84,9 @@ export default function AnalyticsPage() {
         </div>
         <button 
           onClick={exportToCSV}
-          className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-md shadow-indigo-100 transition-all active:scale-95"
+          className="flex items-center gap-2 px-6 py-3 bg-[#1e1b4b] hover:bg-[#2e2a70] text-white rounded-2xl text-sm font-bold shadow-lg shadow-indigo-100 transition-all active:scale-95"
         >
-          <Download size={16} />
+          <Download size={16} strokeWidth={3} />
           Export CSV
         </button>
       </div>

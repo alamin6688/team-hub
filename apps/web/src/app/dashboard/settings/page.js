@@ -116,12 +116,17 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div>
       {/* Header */}
-      <div className="mb-10">
+      <motion.div 
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="mb-10"
+      >
         <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Settings</h1>
         <p className="text-slate-500 mt-1 font-normal text-sm">Manage your account and workspace preferences</p>
-      </div>
+      </motion.div>
 
       <div className="flex flex-col lg:flex-row gap-10">
         {/* Sidebar Tabs */}
@@ -166,9 +171,10 @@ export default function SettingsPage() {
             {activeTab === 'profile' && (
               <motion.div
                 key="profile"
-                initial={{ opacity: 0, x: 10 }}
+                initial={{ opacity: 0, x: 8 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
+                exit={{ opacity: 0, x: -8 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
                 className="bg-white rounded-[32px] border border-slate-100 shadow-sm p-8"
               >
                 <h3 className="text-lg font-bold text-slate-900 mb-8">Personal Information</h3>
@@ -264,9 +270,10 @@ export default function SettingsPage() {
             {activeTab === 'workspace' && (
               <motion.div
                 key="workspace"
-                initial={{ opacity: 0, x: 10 }}
+                initial={{ opacity: 0, x: 8 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
+                exit={{ opacity: 0, x: -8 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
                 className="bg-white rounded-[32px] border border-slate-100 shadow-sm p-8"
               >
                 <div className="flex items-center justify-between mb-8">
@@ -347,9 +354,10 @@ export default function SettingsPage() {
             {activeTab === 'audit-log' && (
               <motion.div
                 key="audit-log"
-                initial={{ opacity: 0, x: 10 }}
+                initial={{ opacity: 0, x: 8 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
+                exit={{ opacity: 0, x: -8 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
                 className="bg-white rounded-[32px] border border-slate-100 shadow-sm p-8"
               >
                 <div className="flex items-center justify-between mb-8">
@@ -366,9 +374,10 @@ export default function SettingsPage() {
             {(activeTab === 'security' || activeTab === 'notifications') && (
               <motion.div
                 key="placeholder"
-                initial={{ opacity: 0, x: 10 }}
+                initial={{ opacity: 0, x: 8 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
+                exit={{ opacity: 0, x: -8 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
                 className="bg-white rounded-[32px] border border-slate-100 shadow-sm p-12 text-center"
               >
                 <div className="w-16 h-16 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -394,9 +403,10 @@ export default function SettingsPage() {
               onClick={() => setShowDeleteModal(false)}
             />
             <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.98, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.98, y: 15 }}
+              transition={{ duration: 0.25, ease: "circOut" }}
               className="relative bg-white rounded-[40px] shadow-2xl border border-slate-100 p-10 max-w-md w-full text-center"
             >
               <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-[20px] flex items-center justify-center mx-auto mb-6">
