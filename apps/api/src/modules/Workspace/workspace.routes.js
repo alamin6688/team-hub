@@ -8,6 +8,7 @@ const actionItemRoutes = require("../ActionItem/action-item.routes");
 const announcementRoutes = require("../Announcement/announcement.routes");
 
 router.get("/", auth(), WorkspaceController.getAllWorkspaces);
+router.post("/", auth(), WorkspaceController.createWorkspace);
 router.post("/initialize", auth(), WorkspaceController.initializeDefaultWorkspace);
 router.get("/:id", auth(), WorkspaceController.getWorkspaceById);
 router.get("/:wsId/goals", auth(), WorkspaceController.getWorkspaceGoals);

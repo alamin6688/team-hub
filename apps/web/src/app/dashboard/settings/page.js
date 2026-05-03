@@ -31,7 +31,18 @@ export default function SettingsPage() {
   const [workspaceData, setWorkspaceData] = useState({
     name: currentWorkspace?.name || '',
     description: currentWorkspace?.description || '',
+    accentColor: currentWorkspace?.accentColor || '#e94560',
   });
+
+  useEffect(() => {
+    if (currentWorkspace) {
+      setWorkspaceData({
+        name: currentWorkspace.name || '',
+        description: currentWorkspace.description || '',
+        accentColor: currentWorkspace.accentColor || '#e94560',
+      });
+    }
+  }, [currentWorkspace]);
 
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = React.useRef(null);
@@ -282,6 +293,35 @@ export default function SettingsPage() {
                       value={workspaceData.description}
                       onChange={(e) => setWorkspaceData({ ...workspaceData, description: e.target.value })}
                     />
+                  </div>
+
+                  <div className="space-y-4">
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Accent Color</label>
+                    <div className="flex flex-wrap gap-3">
+                      {[
+                        '#e94560', '#4f46e5', '#10b981', '#f59e0b', 
+                        '#ec4899', '#8b5cf6', '#06b6d4', '#2dd4bf'
+                      ].map(color => (
+                        <button
+                          key={color}
+                          type="button"
+                          onClick={() => setWorkspaceData({ ...workspaceData, accentColor: color })}
+                          className={`w-10 h-10 rounded-xl transition-all border-4 ${
+                            workspaceData.accentColor === color ? 'border-indigo-100 scale-110 shadow-lg' : 'border-transparent hover:scale-105'
+                          }`}
+                          style={{ backgroundColor: color }}
+                        />
+                      ))}
+                      <div className="flex items-center gap-3 ml-2">
+                        <input 
+                          type="color" 
+                          value={workspaceData.accentColor}
+                          onChange={(e) => setWorkspaceData({ ...workspaceData, accentColor: e.target.value })}
+                          className="w-10 h-10 bg-transparent cursor-pointer rounded-lg border-0 p-0"
+                        />
+                        <span className="text-xs font-mono text-slate-500 uppercase">{workspaceData.accentColor}</span>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="flex justify-end pt-4">

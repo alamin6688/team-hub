@@ -151,10 +151,10 @@ const blockMember = async (workspaceId, userId, isBlocked) => {
 };
 
 const updateWorkspace = async (id, payload) => {
-  const { name, description } = payload;
+  const { name, description, accentColor } = payload;
   return await prisma.workspace.update({
     where: { id },
-    data: { name, description },
+    data: { name, description, accentColor },
   });
 };
 
@@ -273,6 +273,23 @@ const initializeDefaultWorkspace = async (userId, name) => {
   });
 };
 
+const createWorkspace = async (userId, payload) => {
+  const { name, description, accentColor } = payload;
+  return await prisma.workspace.create({
+    data: {
+      name,
+      description,
+      accentColor: accentColor || "#e94560",
+      members: {
+        create: {
+          userId,
+          role: "ADMIN",
+        },
+      },
+    },
+  });
+};
+
 const getGoalDetails = async (id) => {
   return await prisma.goal.findUnique({
     where: { id },
@@ -355,6 +372,7 @@ const deleteGoalUpdate = async (id) => {
 module.exports.WorkspaceService = {
   getAllWorkspaces,
   initializeDefaultWorkspace,
+  createWorkspace,
   getWorkspaceById,
   getWorkspaceGoals,
   getGoalDetails,

@@ -7,7 +7,8 @@ import Cookies from 'js-cookie';
 import toast from 'react-hot-toast';
 import { 
   Hexagon, ChevronDown, LayoutGrid, Target, CheckSquare, Megaphone, 
-  Settings, Search, Moon, Bell, Users, LogOut, BarChart3
+  Settings, Search, Moon, Bell, Users, LogOut, BarChart3, Plus, Check,
+  Briefcase, Globe, X
 } from "lucide-react";
 import { fetchWithAuth } from '@/lib/api';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -18,9 +19,23 @@ export default function DashboardLayout({ children }) {
   const pathname = usePathname();
   const router = useRouter();
   const [showLogoutModal, setShowLogoutModal] = React.useState(false);
+  const [showWorkspaceMenu, setShowWorkspaceMenu] = React.useState(false);
+  const [showCreateModal, setShowCreateModal] = React.useState(false);
+  const [isCreating, setIsCreating] = React.useState(false);
+  const [newWsData, setNewWsData] = React.useState({ name: '', description: '', accentColor: '#e94560' });
   
   const { user, setUser, logout: clearAuth } = useAuthStore();
-  const { currentWorkspace, setWorkspace, setNotificationsCount, members, setMembers } = useWorkspaceStore();
+  const { 
+    currentWorkspace, 
+    workspaces,
+    setWorkspace, 
+    setWorkspaces,
+    switchWorkspace, 
+    setNotificationsCount, 
+    members, 
+    setMembers, 
+    createWorkspace 
+  } = useWorkspaceStore();
 
   React.useEffect(() => {
     const initDashboard = async () => {
@@ -30,16 +45,17 @@ export default function DashboardLayout({ children }) {
         if (userData?.data) setUser(userData.data);
 
         // 2. Get Workspace Details
-        let workspaces = await fetchWithAuth('/workspaces');
+        let workspacesData = await fetchWithAuth('/workspaces');
         
         // SELF-HEALING: If no workspace exists, create one automatically
-        if (!workspaces?.data || workspaces.data.length === 0) {
+        if (!workspacesData?.data || workspacesData.data.length === 0) {
           await fetchWithAuth('/workspaces/initialize', { method: 'POST' });
-          workspaces = await fetchWithAuth('/workspaces');
+          workspacesData = await fetchWithAuth('/workspaces');
         }
 
-        if (workspaces?.data?.length > 0) {
-          const ws = workspaces.data[0];
+        if (workspacesData?.data?.length > 0) {
+          setWorkspaces(workspacesData.data);
+          const ws = currentWorkspace || workspacesData.data[0];
           setWorkspace(ws);
 
           // 3. Get Workspace Members (for online status)
@@ -151,18 +167,98 @@ export default function DashboardLayout({ children }) {
     router.push('/login');
   };
 
+  const handleSwitchWorkspace = async (ws) => {
+    setShowWorkspaceMenu(false);
+    if (ws.id === currentWorkspace?.id) return;
+    
+    const loadingToast = toast.loading(`Switching to ${ws.name}...`);
+    try {
+      await switchWorkspace(ws);
+      toast.success(`Switched to ${ws.name}`, { id: loadingToast });
+    } catch (error) {
+      toast.error('Failed to switch workspace', { id: loadingToast });
+    }
+  };
+
+  const handleCreateWorkspace = async (e) => {
+    e.preventDefault();
+    if (!newWsData.name) return;
+
+    setIsCreating(true);
+    try {
+      const created = await createWorkspace(newWsData);
+      await handleSwitchWorkspace(created);
+      setShowCreateModal(false);
+      setNewWsData({ name: '', description: '', accentColor: '#e94560' });
+    } catch (error) {
+      toast.error('Failed to create workspace');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
   return (
     <div className="flex h-screen overflow-hidden bg-[#F8FAFC]">
       {/* Sidebar */}
       <aside className="w-[260px] bg-white border-r border-gray-100 flex flex-col h-full">
         <div className="flex-1 flex flex-col min-h-0">
           {/* Logo & Workspace Dropdown */}
-          <div className="h-[72px] flex items-center px-6 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors">
-            <div className="flex items-center justify-center w-8 h-8 rounded bg-indigo-600 text-white mr-3">
-              <Hexagon size={20} fill="currentColor" />
+          <div className="relative">
+            <div 
+              onClick={() => setShowWorkspaceMenu(!showWorkspaceMenu)}
+              className="h-[72px] flex items-center px-6 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors"
+            >
+              <div 
+                className="flex items-center justify-center w-8 h-8 rounded text-white mr-3 shadow-sm"
+                style={{ backgroundColor: currentWorkspace?.accentColor || '#4f46e5' }}
+              >
+                <Hexagon size={20} fill="currentColor" />
+              </div>
+              <div className="flex flex-col overflow-hidden">
+                <span className="font-bold text-gray-800 text-[14px] truncate">
+                  {currentWorkspace?.name || 'TeamHub'}
+                </span>
+                <span className="text-[10px] text-gray-400 font-medium">Workspace</span>
+              </div>
+              <ChevronDown size={14} className={`ml-auto text-gray-400 transition-transform ${showWorkspaceMenu ? 'rotate-180' : ''}`} />
             </div>
-            <span className="font-bold text-gray-800 text-[15px]">TeamHub</span>
-            <ChevronDown size={16} className="ml-auto text-gray-400" />
+
+            {/* Workspace Dropdown Menu */}
+            {showWorkspaceMenu && (
+              <div className="absolute top-full left-4 right-4 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="p-2 max-h-[300px] overflow-y-auto custom-scrollbar">
+                  {workspaces.map((ws) => (
+                    <button
+                      key={ws.id}
+                      onClick={() => handleSwitchWorkspace(ws)}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-all text-left group"
+                    >
+                      <div 
+                        className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold"
+                        style={{ backgroundColor: ws.accentColor }}
+                      >
+                        {ws.name.substring(0, 2).toUpperCase()}
+                      </div>
+                      <span className={`text-sm font-semibold flex-1 truncate ${ws.id === currentWorkspace?.id ? 'text-indigo-600' : 'text-gray-700'}`}>
+                        {ws.name}
+                      </span>
+                      {ws.id === currentWorkspace?.id && (
+                        <Check size={16} className="text-indigo-600" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+                <div className="p-2 border-t border-gray-50 bg-gray-50/50">
+                  <button 
+                    onClick={() => { setShowCreateModal(true); setShowWorkspaceMenu(false); }}
+                    className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-indigo-600 hover:bg-indigo-50 transition-all text-sm font-bold"
+                  >
+                    <Plus size={18} />
+                    Create Workspace
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Navigation */}
@@ -273,6 +369,104 @@ export default function DashboardLayout({ children }) {
                 Yes, Logout
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Workspace Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <div 
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-md animate-fade-in"
+            onClick={() => setShowCreateModal(false)}
+          ></div>
+          <div className="relative bg-white rounded-[40px] shadow-2xl border border-slate-100 p-10 max-w-lg w-full animate-scale-in">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
+                  <Briefcase size={28} />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-black text-slate-900">New Workspace</h3>
+                  <p className="text-slate-500 font-medium text-sm">Set up a space for your team</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowCreateModal(false)}
+                className="p-2 hover:bg-slate-50 rounded-full text-slate-400 transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateWorkspace} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Workspace Name</label>
+                <input 
+                  type="text" 
+                  required
+                  placeholder="e.g. Marketing Team, Product Launch"
+                  className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-base font-bold focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:bg-white transition-all"
+                  value={newWsData.name}
+                  onChange={(e) => setNewWsData({ ...newWsData, name: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Description (Optional)</label>
+                <textarea 
+                  rows={3}
+                  placeholder="What is this workspace for?"
+                  className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:bg-white transition-all resize-none"
+                  value={newWsData.description}
+                  onChange={(e) => setNewWsData({ ...newWsData, description: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">Accent Color</label>
+                <div className="flex flex-wrap gap-2.5">
+                  {[
+                    '#e94560', '#4f46e5', '#10b981', '#f59e0b', 
+                    '#ec4899', '#8b5cf6', '#06b6d4', '#2dd4bf'
+                  ].map(color => (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => setNewWsData({ ...newWsData, accentColor: color })}
+                      className={`w-9 h-9 rounded-xl transition-all border-4 ${
+                        newWsData.accentColor === color ? 'border-indigo-100 scale-110 shadow-lg' : 'border-transparent hover:scale-105'
+                      }`}
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <button 
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="flex-1 px-8 py-4 bg-slate-50 text-slate-600 font-bold rounded-2xl hover:bg-slate-100 transition-all"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  disabled={isCreating}
+                  className="flex-[2] px-8 py-4 bg-[#1e1b4b] text-white font-bold rounded-2xl hover:bg-[#2e2a70] shadow-xl shadow-indigo-100 transition-all active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-3"
+                >
+                  {isCreating ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  ) : (
+                    <>
+                      <Globe size={20} />
+                      <span>Create Workspace</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

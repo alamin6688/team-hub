@@ -132,6 +132,19 @@ const initializeDefaultWorkspace = async (req, res, next) => {
   }
 };
 
+const createWorkspace = async (req, res, next) => {
+  try {
+    const result = await WorkspaceService.createWorkspace(req.user.id, req.body);
+    res.status(httpStatus.CREATED).json({
+      success: true,
+      message: "Workspace created successfully",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const getGoalDetails = async (req, res, next) => {
   try {
     const result = await WorkspaceService.getGoalDetails(req.params.id);
@@ -332,6 +345,7 @@ const getWorkspaceAnalytics = async (req, res, next) => {
 module.exports.WorkspaceController = {
   getAllWorkspaces,
   initializeDefaultWorkspace,
+  createWorkspace,
   getWorkspaceById,
   getWorkspaceGoals,
   getGoalDetails,

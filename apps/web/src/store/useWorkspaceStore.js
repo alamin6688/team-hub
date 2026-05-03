@@ -9,14 +9,65 @@ export const useWorkspaceStore = create(
       announcements: [],
       actionItems: [],
       members: [],
+      workspaces: [],
       notificationsCount: 0,
       isLoading: false,
 
+      fetchWorkspaces: async () => {
+        const { fetchWithAuth } = await import("@/lib/api");
+        try {
+          const response = await fetchWithAuth("/workspaces");
+          set({ workspaces: response.data });
+          return response.data;
+        } catch (error) {
+          console.error("Fetch workspaces error:", error);
+        }
+      },
+
+      createWorkspace: async (data) => {
+        const { fetchWithAuth } = await import("@/lib/api");
+        try {
+          const response = await fetchWithAuth("/workspaces", {
+            method: "POST",
+            body: JSON.stringify(data),
+          });
+          set((state) => ({ workspaces: [...state.workspaces, response.data] }));
+          return response.data;
+        } catch (error) {
+          console.error("Create workspace error:", error);
+          throw error;
+        }
+      },
+
       setWorkspace: (workspace) => set({ currentWorkspace: workspace }),
+
+      switchWorkspace: async (workspace) => {
+        const { fetchWithAuth } = await import("@/lib/api");
+        set({ currentWorkspace: workspace, isLoading: true });
+        try {
+          const [goals, announcements, actionItems, members] = await Promise.all([
+            fetchWithAuth(`/workspaces/${workspace.id}/goals`),
+            fetchWithAuth(`/workspaces/${workspace.id}/announcements`),
+            fetchWithAuth(`/workspaces/${workspace.id}/action-items`),
+            fetchWithAuth(`/workspaces/${workspace.id}/members`),
+          ]);
+          set({ 
+            goals: goals.data, 
+            announcements: announcements.data, 
+            actionItems: actionItems.data, 
+            members: members.data,
+            isLoading: false 
+          });
+        } catch (error) {
+          console.error("Switch workspace error:", error);
+          set({ isLoading: false });
+        }
+      },
       setGoals: (goals) => set({ goals }),
       setAnnouncements: (announcements) => set({ announcements }),
       setActionItems: (items) => set({ actionItems: items }),
       setMembers: (members) => set({ members }),
+      setWorkspaces: (workspaces) => set({ workspaces }),
       setNotificationsCount: (count) => set({ notificationsCount: count }),
       setLoading: (loading) => set({ isLoading: loading }),
 
@@ -250,7 +301,10 @@ export const useWorkspaceStore = create(
             method: "PATCH",
             body: JSON.stringify(data),
           });
-          set({ currentWorkspace: response.data });
+          set((state) => ({ 
+            currentWorkspace: response.data,
+            workspaces: state.workspaces.map(ws => ws.id === workspaceId ? response.data : ws)
+          }));
           return response.data;
         } catch (error) {
           console.error("Update workspace error:", error);
@@ -264,7 +318,13 @@ export const useWorkspaceStore = create(
           await fetchWithAuth(`/workspaces/${workspaceId}`, {
             method: "DELETE",
           });
-          set({ currentWorkspace: null });
+          set((state) => {
+            const remaining = state.workspaces.filter(ws => ws.id !== workspaceId);
+            return {
+              workspaces: remaining,
+              currentWorkspace: remaining.length > 0 ? remaining[0] : null
+            };
+          });
         } catch (error) {
           console.error("Delete workspace error:", error);
           throw error;
