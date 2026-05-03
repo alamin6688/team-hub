@@ -1,0 +1,251 @@
+const httpStatus = require("http-status");
+const { WorkspaceService } = require("./workspace.service");
+
+const getAllWorkspaces = async (req, res, next) => {
+  try {
+    const result = await WorkspaceService.getAllWorkspaces(req.user.id);
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: "Workspaces fetched successfully",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getWorkspaceById = async (req, res, next) => {
+  try {
+    const result = await WorkspaceService.getWorkspaceById(req.params.id);
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: "Workspace fetched successfully",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getWorkspaceGoals = async (req, res, next) => {
+  try {
+    const result = await WorkspaceService.getWorkspaceGoals(req.params.wsId);
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: "Goals fetched successfully",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getWorkspaceAnnouncements = async (req, res, next) => {
+  try {
+    const result = await WorkspaceService.getWorkspaceAnnouncements(req.params.wsId);
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: "Announcements fetched successfully",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getWorkspaceActionItems = async (req, res, next) => {
+  try {
+    const result = await WorkspaceService.getWorkspaceActionItems(req.params.wsId);
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: "Action items fetched successfully",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getWorkspaceMembers = async (req, res, next) => {
+  try {
+    const result = await WorkspaceService.getWorkspaceMembers(req.params.wsId);
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: "Members fetched successfully",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const createGoal = async (req, res, next) => {
+  try {
+    const result = await WorkspaceService.createGoal(req.params.wsId, req.user.id, req.body);
+    res.status(httpStatus.CREATED).json({
+      success: true,
+      message: "Goal created successfully",
+      data: result,
+    });
+  } catch (error) {
+    console.error("CREATE GOAL ERROR:", error);
+    next(error);
+  }
+};
+
+const updateGoal = async (req, res, next) => {
+  try {
+    const result = await WorkspaceService.updateGoal(req.params.id, req.body);
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: "Goal updated successfully",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteGoal = async (req, res, next) => {
+  try {
+    await WorkspaceService.deleteGoal(req.params.id);
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: "Goal deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const initializeDefaultWorkspace = async (req, res, next) => {
+  try {
+    const result = await WorkspaceService.initializeDefaultWorkspace(req.user.id, req.user.name);
+    res.status(httpStatus.CREATED).json({
+      success: true,
+      message: "Default workspace initialized",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getGoalDetails = async (req, res, next) => {
+  try {
+    const result = await WorkspaceService.getGoalDetails(req.params.id);
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: "Goal details fetched successfully",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const createGoalUpdate = async (req, res, next) => {
+  try {
+    const result = await WorkspaceService.createGoalUpdate(req.params.id, req.user.id, req.body);
+    res.status(httpStatus.CREATED).json({
+      success: true,
+      message: "Goal update posted successfully",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getGoalMilestones = async (req, res, next) => {
+  try {
+    const result = await WorkspaceService.getGoalMilestones(req.params.goalId);
+    res.status(httpStatus.OK).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const createMilestone = async (req, res, next) => {
+  try {
+    const result = await WorkspaceService.createMilestone(req.params.goalId, req.body);
+    res.status(httpStatus.CREATED).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateMilestone = async (req, res, next) => {
+  try {
+    const result = await WorkspaceService.updateMilestone(req.params.id, req.body);
+    res.status(httpStatus.OK).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteMilestone = async (req, res, next) => {
+  try {
+    await WorkspaceService.deleteMilestone(req.params.id);
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: "Milestone deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateGoalUpdate = async (req, res, next) => {
+  try {
+    const result = await WorkspaceService.updateGoalUpdate(req.params.id, req.body);
+    res.status(httpStatus.OK).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteGoalUpdate = async (req, res, next) => {
+  try {
+    await WorkspaceService.deleteGoalUpdate(req.params.id);
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: "Goal update deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports.WorkspaceController = {
+  getAllWorkspaces,
+  initializeDefaultWorkspace,
+  getWorkspaceById,
+  getWorkspaceGoals,
+  getGoalDetails,
+  createGoal,
+  updateGoal,
+  deleteGoal,
+  createGoalUpdate,
+  updateGoalUpdate,
+  deleteGoalUpdate,
+  getGoalMilestones,
+  createMilestone,
+  updateMilestone,
+  deleteMilestone,
+  getWorkspaceAnnouncements,
+  getWorkspaceActionItems,
+  getWorkspaceMembers,
+};

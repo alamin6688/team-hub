@@ -57,9 +57,22 @@ const refreshToken = async (req, res, next) => {
   }
 };
 
+const getMe = async (req, res, next) => {
+  try {
+    const user = await AuthService.getUserById(req.user.id);
+    res.status(httpStatus.OK).json({
+      success: true,
+      data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports.AuthController = {
   register,
   login,
   logout,
   refreshToken,
+  getMe,
 };

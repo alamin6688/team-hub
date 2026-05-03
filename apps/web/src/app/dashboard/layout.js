@@ -9,13 +9,75 @@ import {
   Hexagon, ChevronDown, LayoutGrid, Target, CheckSquare, Megaphone, 
   Settings, Search, Moon, Bell, Users, LogOut, BarChart3
 } from "lucide-react";
+import { fetchWithAuth } from '@/lib/api';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useWorkspaceStore } from '@/store/useWorkspaceStore';
+import { io } from "socket.io-client";
 
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
   const router = useRouter();
   const [showLogoutModal, setShowLogoutModal] = React.useState(false);
+  
+  const { user, setUser, logout: clearAuth } = useAuthStore();
+  const { currentWorkspace, setWorkspace, setNotificationsCount, members, setMembers } = useWorkspaceStore();
 
   React.useEffect(() => {
+    const initDashboard = async () => {
+      try {
+        // 1. Get User Info
+        const userData = await fetchWithAuth('/auth/me');
+        if (userData?.data) setUser(userData.data);
+
+        // 2. Get Workspace Details
+        let workspaces = await fetchWithAuth('/workspaces');
+        
+        // SELF-HEALING: If no workspace exists, create one automatically
+        if (!workspaces?.data || workspaces.data.length === 0) {
+          await fetchWithAuth('/workspaces/initialize', { method: 'POST' });
+          workspaces = await fetchWithAuth('/workspaces');
+        }
+
+        if (workspaces?.data?.length > 0) {
+          const ws = workspaces.data[0];
+          setWorkspace(ws);
+
+          // 3. Get Workspace Members (for online status)
+          const membersData = await fetchWithAuth(`/workspaces/${ws.id}/members`);
+          if (membersData?.data) setMembers(membersData.data);
+        }
+
+        // 4. Get Notifications Count
+        const notifications = await fetchWithAuth('/notifications');
+        if (notifications?.data) {
+          const unread = notifications.data.filter(n => !n.read).length;
+          setNotificationsCount(unread);
+        }
+
+      } catch (error) {
+        console.error('Failed to initialize dashboard:', error);
+      }
+    };
+
+    initDashboard();
+
+    // 5. Initialize Socket.io
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:8020');
+    
+    socket.on('connect', () => {
+      console.log('Connected to socket server');
+      if (user?.id) {
+        socket.emit('join', user.id);
+      }
+    });
+
+    socket.on('notification', (notification) => {
+      setNotificationsCount((prev) => prev + 1);
+      toast.success(`New notification: ${notification.title}`, {
+        icon: '🔔',
+      });
+    });
+
     if (localStorage.getItem("show_login_toast") === "true") {
       toast.success("Welcome back!");
       localStorage.removeItem("show_login_toast");
@@ -24,6 +86,7 @@ export default function DashboardLayout({ children }) {
 
   const handleLogout = () => {
     Cookies.remove('token', { path: '/' });
+    clearAuth();
     toast.success('Logged out successfully');
     router.push('/login');
   };
@@ -80,19 +143,16 @@ export default function DashboardLayout({ children }) {
         <div className="shrink-0">
           {/* Online Users */}
           <div className="px-6 pb-6">
-            <div className="text-[11px] font-bold text-gray-400 tracking-wider mb-3">ONLINE - 4</div>
+            <div className="text-[11px] font-bold text-gray-400 tracking-wider mb-3 uppercase">ONLINE - {members.filter(m => m.isOnline).length}</div>
             <div className="flex -space-x-2">
-              {[
-                { initials: 'DU', bg: 'bg-purple-600' },
-                { initials: 'AC', bg: 'bg-teal-600' },
-                { initials: 'MI', bg: 'bg-orange-500' },
-                { initials: 'TN', bg: 'bg-emerald-600' },
-              ].map((user, i) => (
-                <div key={i} className="relative z-0 hover:z-10 transition-all">
-                  <div className={`w-8 h-8 rounded-full ${user.bg} border-2 border-white flex items-center justify-center text-white text-[10px] font-bold shadow-sm`}>
-                    {user.initials}
+              {members.slice(0, 5).map((member, i) => (
+                <div key={member.id || i} className="relative z-0 hover:z-10 transition-all">
+                  <div className={`w-8 h-8 rounded-full ${member.userColor || 'bg-indigo-500'} border-2 border-white flex items-center justify-center text-white text-[10px] font-bold shadow-sm uppercase`}>
+                    {member.name?.substring(0, 2) || '??'}
                   </div>
-                  <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-[1.5px] border-white rounded-full"></div>
+                  {member.isOnline && (
+                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-[1.5px] border-white rounded-full"></div>
+                  )}
                 </div>
               ))}
             </div>
@@ -102,14 +162,18 @@ export default function DashboardLayout({ children }) {
           <div className="p-4 border-t border-gray-100 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-colors">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center text-white text-sm font-bold shadow-sm">
-                  DU
+                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center text-white text-sm font-bold shadow-sm uppercase">
+                  {user?.name?.substring(0, 2) || '??'}
                 </div>
                 <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-gray-800 leading-tight">Demo User</span>
-                <span className="text-[11px] font-medium text-gray-500">demo@teamhub.com</span>
+                <span className="text-sm font-bold text-gray-800 leading-tight truncate max-w-[120px]">
+                  {user?.name || 'Loading...'}
+                </span>
+                <span className="text-[11px] font-medium text-gray-500 truncate max-w-[120px]">
+                  {user?.email || ''}
+                </span>
               </div>
             </div>
             <button 
@@ -187,7 +251,11 @@ export default function DashboardLayout({ children }) {
               </button>
               <button className="hover:text-gray-600 transition-colors relative">
                 <Bell size={20} />
-                <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                {useWorkspaceStore.getState().notificationsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white text-[9px] font-bold text-white flex items-center justify-center">
+                    {useWorkspaceStore.getState().notificationsCount}
+                  </span>
+                )}
               </button>
             </div>
           </div>

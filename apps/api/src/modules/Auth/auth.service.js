@@ -26,6 +26,19 @@ const register = async (userData) => {
     },
   });
 
+  // Create default workspace for the user
+  await prisma.workspace.create({
+    data: {
+      name: `${name}'s Workspace`,
+      members: {
+        create: {
+          userId: user.id,
+          role: "ADMIN",
+        },
+      },
+    },
+  });
+
   return user;
 };
 
@@ -87,8 +100,21 @@ const refreshToken = async (token) => {
   }
 };
 
+const getUserById = async (id) => {
+  return await prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      avatarUrl: true,
+    },
+  });
+};
+
 module.exports.AuthService = {
   register,
   login,
   refreshToken,
+  getUserById,
 };

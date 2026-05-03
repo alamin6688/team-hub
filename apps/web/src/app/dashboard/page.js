@@ -6,6 +6,8 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell 
 } from 'recharts';
+import { fetchWithAuth } from '@/lib/api';
+import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 
 const weeklyChartData = [
   { name: 'W14', value: 3 },
@@ -16,52 +18,55 @@ const weeklyChartData = [
   { name: 'W19', value: 9 },
 ];
 
-const actionItemsData = [
-  { name: 'To Do', value: 2, color: '#9ca3af' },
-  { name: 'In Progress', value: 3, color: '#f59e0b' },
-  { name: 'Done', value: 3, color: '#22c55e' },
-];
-
-const recentActivity = [
-  {
-    id: 1,
-    user: "Sarah Chen",
-    avatar: "https://i.pravatar.cc/150?u=sarah",
-    action: "completed task",
-    target: "Update brand assets in Figma",
-    time: "2 hours ago"
-  },
-  {
-    id: 2,
-    user: "Marcus Johnson",
-    avatar: "https://i.pravatar.cc/150?u=marcus",
-    action: "commented on",
-    target: "Review PR #402",
-    time: "4 hours ago"
-  },
-  {
-    id: 3,
-    user: "Emma Wilson",
-    avatar: "https://i.pravatar.cc/150?u=emma",
-    action: "created a new goal",
-    target: "Reduce customer churn by 5%",
-    time: "Yesterday"
-  },
-  {
-    id: 4,
-    user: "Alex Rivera",
-    avatar: "https://i.pravatar.cc/150?u=alex",
-    action: "moved task to Done",
-    target: "Finalize Q4 OKRs",
-    time: "Yesterday"
-  }
-];
-
-const overdueGoals = [
-  { id: 1, title: 'Quarterly Security Audit', dueDate: '20/04/2026' }
-];
-
 export default function DashboardPage() {
+  const { 
+    currentWorkspace, 
+    goals, setGoals, 
+    announcements, setAnnouncements,
+    actionItems, setActionItems,
+    isLoading, setLoading 
+  } = useWorkspaceStore();
+
+  React.useEffect(() => {
+    if (!currentWorkspace?.id) return;
+
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      try {
+        const [goalsRes, announcementsRes, actionItemsRes] = await Promise.all([
+          fetchWithAuth(`/workspaces/${currentWorkspace.id}/goals`),
+          fetchWithAuth(`/workspaces/${currentWorkspace.id}/announcements`),
+          fetchWithAuth(`/workspaces/${currentWorkspace.id}/action-items`),
+        ]);
+
+        if (goalsRes?.data) setGoals(goalsRes.data);
+        if (announcementsRes?.data) setAnnouncements(announcementsRes.data);
+        if (actionItemsRes?.data) setActionItems(actionItemsRes.data);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, [currentWorkspace?.id]);
+
+  // Derived stats
+  const totalGoals = goals.length;
+  const completedGoals = goals.filter(g => g.status === 'COMPLETED').length;
+  const inProgressGoals = goals.filter(g => g.status === 'IN_PROGRESS').length;
+  const overdueGoalsCount = goals.filter(g => g.status === 'OVERDUE' || (new Date(g.dueDate) < new Date() && g.status !== 'COMPLETED')).length;
+
+  // Chart data formatting
+  const actionItemsByStatus = [
+    { name: 'To Do', value: actionItems.filter(i => i.status === 'TODO').length, color: '#9ca3af' },
+    { name: 'In Progress', value: actionItems.filter(i => i.status === 'IN_PROGRESS').length, color: '#f59e0b' },
+    { name: 'Done', value: actionItems.filter(i => i.status === 'DONE').length, color: '#22c55e' },
+  ];
+
+  const overdueList = goals.filter(g => new Date(g.dueDate) < new Date() && g.status !== 'COMPLETED').slice(0, 5);
+
   return (
     <div className="p-8">
       {/* Top Action Bar */}
@@ -82,8 +87,8 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="flex items-end gap-3">
-            <span className="text-3xl font-bold text-gray-800">24</span>
-            <span className="text-[13px] font-medium text-emerald-500 pb-1">+12% this month</span>
+            <span className="text-3xl font-bold text-gray-800">{totalGoals}</span>
+            <span className="text-[13px] font-medium text-emerald-500 pb-1">Active</span>
           </div>
         </div>
 
@@ -95,8 +100,8 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="flex items-end gap-3">
-            <span className="text-3xl font-bold text-gray-800">18</span>
-            <span className="text-[13px] font-medium text-emerald-500 pb-1">+5% this month</span>
+            <span className="text-3xl font-bold text-gray-800">{completedGoals}</span>
+            <span className="text-[13px] font-medium text-emerald-500 pb-1">Total</span>
           </div>
         </div>
 
@@ -108,8 +113,8 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="flex items-end gap-3">
-            <span className="text-3xl font-bold text-gray-800">4</span>
-            <span className="text-[13px] font-medium text-red-500 pb-1">-2% this month</span>
+            <span className="text-3xl font-bold text-gray-800">{inProgressGoals}</span>
+            <span className="text-[13px] font-medium text-amber-500 pb-1">Active</span>
           </div>
         </div>
 
@@ -121,8 +126,8 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="flex items-end gap-3">
-            <span className="text-3xl font-bold text-gray-800">2</span>
-            <span className="text-[13px] font-medium text-red-500 pb-1">+1 this week</span>
+            <span className="text-3xl font-bold text-gray-800">{overdueGoalsCount}</span>
+            <span className="text-[13px] font-medium text-red-500 pb-1">Requires attention</span>
           </div>
         </div>
       </div>
@@ -171,14 +176,14 @@ export default function DashboardPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={actionItemsData}
+                    data={actionItemsByStatus}
                     innerRadius={60}
                     outerRadius={90}
                     paddingAngle={2}
                     dataKey="value"
                     stroke="none"
                   >
-                    {actionItemsData.map((entry, index) => (
+                    {actionItemsByStatus.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
@@ -191,7 +196,7 @@ export default function DashboardPage() {
             
             {/* Custom Legend to match image */}
             <div className="w-1/2 flex flex-col gap-3 ml-4">
-              {actionItemsData.map((entry, index) => (
+              {actionItemsByStatus.map((entry, index) => (
                 <div key={index} className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: entry.color }}></div>
@@ -210,7 +215,7 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
           <h2 className="text-base font-bold text-gray-800 mb-6">Overdue Goals</h2>
           <div className="flex flex-col gap-3">
-            {overdueGoals.map((goal) => (
+            {overdueList.map((goal) => (
               <div key={goal.id} className="flex items-center justify-between p-4 border border-gray-100 rounded-lg bg-white hover:bg-gray-50 transition-colors">
                 <div className="flex items-center gap-4">
                   <span className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-red-50 text-red-600 border border-red-100">
@@ -218,35 +223,36 @@ export default function DashboardPage() {
                   </span>
                   <span className="text-sm font-medium text-gray-800">{goal.title}</span>
                 </div>
-                <span className="text-sm text-gray-500">Due {goal.dueDate}</span>
+                <span className="text-sm text-gray-500">Due {new Date(goal.dueDate).toLocaleDateString()}</span>
               </div>
             ))}
-            {overdueGoals.length === 0 && (
+            {overdueList.length === 0 && (
               <p className="text-sm text-gray-500 text-center py-4">No overdue goals right now. Great job!</p>
             )}
           </div>
         </div>
 
-        {/* Recent Activity */}
+        {/* Recent Activity (Announcements Feed) */}
         <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-          <h2 className="text-base font-bold text-gray-800 mb-6">Recent Activity</h2>
+          <h2 className="text-base font-bold text-gray-800 mb-6">Announcements</h2>
           <div className="flex flex-col gap-6">
-            {recentActivity.map((activity) => (
-              <div key={activity.id} className="flex items-start gap-4">
-                <img 
-                  src={activity.avatar} 
-                  alt={activity.user} 
-                  className="w-8 h-8 rounded-full flex-shrink-0 mt-0.5"
-                />
+            {announcements.slice(0, 5).map((announcement) => (
+              <div key={announcement.id} className="flex items-start gap-4">
+                <div className={`w-8 h-8 rounded-full flex-shrink-0 mt-0.5 flex items-center justify-center text-white font-bold text-xs ${announcement.userColor || 'bg-indigo-500'}`}>
+                  {announcement.author?.name?.substring(0, 2) || 'AN'}
+                </div>
                 <div>
                   <p className="text-[13px] text-gray-600 leading-snug">
-                    <span className="font-semibold text-gray-800">{activity.user}</span> {activity.action}{" "}
-                    <span className="font-semibold text-gray-800">{activity.target}</span>
+                    <span className="font-semibold text-gray-800">{announcement.author?.name}</span>:{" "}
+                    <span className="text-gray-800 font-medium">{announcement.title}</span>
                   </p>
-                  <p className="text-[12px] text-gray-400 mt-1">{activity.time}</p>
+                  <p className="text-[12px] text-gray-400 mt-1">{new Date(announcement.createdAt).toLocaleDateString()}</p>
                 </div>
               </div>
             ))}
+            {announcements.length === 0 && (
+              <p className="text-sm text-gray-500 text-center py-4">No recent announcements.</p>
+            )}
           </div>
         </div>
       </div>
