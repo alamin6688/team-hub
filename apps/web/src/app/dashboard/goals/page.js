@@ -2,16 +2,20 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Filter, Plus, Trash2, Loader2, X, AlertCircle } from 'lucide-react';
+import { Filter, Plus, Trash2, Loader2, X, AlertCircle, Eye, ChevronRight, Calendar, Check, ChevronDown } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { fetchWithAuth } from '@/lib/api';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import toast from 'react-hot-toast';
 
 export default function GoalsPage() {
+  const router = useRouter();
   const { currentWorkspace, goals, setGoals } = useWorkspaceStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, goalId: null });
   const [isLoading, setIsLoading] = useState(false);
+  const [filterStatus, setFilterStatus] = useState('ALL');
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [newGoal, setNewGoal] = useState({
     title: "",
     description: "",
@@ -75,10 +79,12 @@ export default function GoalsPage() {
 
   const getStatusStyle = (status) => {
     switch (status) {
-      case 'COMPLETED': return 'bg-emerald-100 text-emerald-700';
-      case 'IN_PROGRESS': return 'bg-amber-100 text-amber-700';
-      case 'OVERDUE': return 'bg-red-100 text-red-700';
-      default: return 'bg-slate-100 text-slate-700';
+      case 'COMPLETED': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+      case 'IN_PROGRESS': return 'bg-blue-100 text-blue-700 border-blue-200';
+      case 'IN_REVIEW': return 'bg-purple-100 text-purple-700 border-purple-200';
+      case 'NOT_STARTED': return 'bg-amber-100 text-amber-700 border-amber-200';
+      case 'OVERDUE': return 'bg-rose-100 text-rose-700 border-rose-200';
+      default: return 'bg-slate-50 text-slate-500 border-slate-100';
     }
   };
 
@@ -91,10 +97,43 @@ export default function GoalsPage() {
           <p className="text-sm text-gray-500 mt-1">Track and manage high-level objectives.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm">
-            <Filter size={16} />
-            Filter
-          </button>
+          <div className="relative">
+            <button 
+              onClick={() => setShowFilterMenu(!showFilterMenu)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-sm border ${
+                filterStatus !== 'ALL' 
+                  ? 'bg-indigo-50 border-indigo-200 text-indigo-700' 
+                  : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <Filter size={16} />
+              {filterStatus === 'ALL' ? 'Filter' : filterStatus.replace('_', ' ')}
+              <ChevronDown size={14} className={`ml-1 transition-transform ${showFilterMenu ? 'rotate-180' : ''}`} />
+            </button>
+
+            {showFilterMenu && (
+              <>
+                <div className="fixed inset-0 z-[100]" onClick={() => setShowFilterMenu(false)}></div>
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 z-[101] overflow-hidden animate-in fade-in slide-in-from-top-2">
+                  <div className="p-1.5">
+                    {['ALL', 'NOT_STARTED', 'IN_PROGRESS', 'IN_REVIEW', 'COMPLETED'].map((status) => (
+                      <button
+                        key={status}
+                        onClick={() => { setFilterStatus(status); setShowFilterMenu(false); }}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                          filterStatus === status ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-50'
+                        }`}
+                      >
+                        {status.replace('_', ' ')}
+                        {filterStatus === status && <Check size={14} />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
           <button 
             onClick={() => setIsModalOpen(true)}
             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shadow-sm"
@@ -117,37 +156,63 @@ export default function GoalsPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {goals.map((goal) => (
-              <tr key={goal.id} className="hover:bg-gray-50/50 transition-colors">
-                <td className="px-6 py-4 font-medium text-gray-800">
-                  <Link href={`/dashboard/goals/${goal.id}`} className="hover:text-indigo-600 transition-colors block">
-                    {goal.title}
-                  </Link>
-                  <span className="text-xs text-gray-400 font-normal">{goal.description?.substring(0, 50)}...</span>
+            {goals
+              .filter(goal => filterStatus === 'ALL' || goal.status === filterStatus)
+              .map((goal) => (
+              <tr 
+                key={goal.id} 
+                onClick={() => router.push(`/dashboard/goals/${goal.id}`)}
+                className="group hover:bg-indigo-50/30 transition-all cursor-pointer border-l-2 border-l-transparent hover:border-l-indigo-500"
+              >
+                <td className="px-6 py-4">
+                  <div className="flex flex-col">
+                    <span className="font-bold text-gray-800 group-hover:text-indigo-600 transition-colors">
+                      {goal.title}
+                    </span>
+                    <span className="text-xs text-gray-400 font-medium truncate max-w-[300px]">
+                      {goal.description || "No description provided"}
+                    </span>
+                  </div>
                 </td>
                 <td className="px-6 py-4">
-                  <span className={`inline-flex items-center px-2.5 py-1 rounded text-xs font-medium ${getStatusStyle(goal.status)}`}>
+                  <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${getStatusStyle(goal.status)}`}>
                     {goal.status.replace('_', ' ')}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-gray-500">
-                  {goal.dueDate ? new Date(goal.dueDate).toLocaleDateString() : 'No due date'}
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-2 text-gray-500">
+                    <Calendar size={14} className="text-gray-400" />
+                    <span className="text-xs font-medium">
+                      {goal.dueDate ? new Date(goal.dueDate).toLocaleDateString() : 'No due date'}
+                    </span>
+                  </div>
                 </td>
-                <td className="px-6 py-4 text-center">
-                  <button 
-                    onClick={() => setDeleteModal({ isOpen: true, goalId: goal.id })}
-                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                    title="Delete Goal"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                <td className="px-6 py-4">
+                  <div className="flex items-center justify-center gap-2">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/goals/${goal.id}`); }}
+                      className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                      title="View Details"
+                    >
+                      <Eye size={16} />
+                    </button>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setDeleteModal({ isOpen: true, goalId: goal.id }); }}
+                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                      title="Delete Goal"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
-            {goals.length === 0 && (
+            {goals.filter(goal => filterStatus === 'ALL' || goal.status === filterStatus).length === 0 && (
               <tr>
                 <td colSpan="4" className="px-6 py-12 text-center text-gray-500 italic">
-                  No goals found. Click "New Goal" to get started!
+                  {filterStatus === 'ALL' 
+                    ? 'No goals found. Click "New Goal" to get started!' 
+                    : `No goals found with status "${filterStatus.replace('_', ' ')}".`}
                 </td>
               </tr>
             )}

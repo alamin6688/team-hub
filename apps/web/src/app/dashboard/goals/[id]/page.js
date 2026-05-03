@@ -25,8 +25,8 @@ export default function GoalDetailPage() {
   
   const [newUpdate, setNewUpdate] = useState("");
   const [editingUpdate, setEditingUpdate] = useState({ id: null, content: "" });
-  const [editingMilestone, setEditingMilestone] = useState({ id: null, title: "", dueDate: "" });
-  const [newMilestone, setNewMilestone] = useState({ title: "", dueDate: "" });
+  const [editingMilestone, setEditingMilestone] = useState({ id: null, title: "", dueDate: "", progress: 0 });
+  const [newMilestone, setNewMilestone] = useState({ title: "", dueDate: "", progress: 0 });
   const [editGoal, setEditGoal] = useState({ title: "", description: "", dueDate: "", status: "" });
 
   const fetchGoalDetails = async () => {
@@ -47,6 +47,17 @@ export default function GoalDetailPage() {
       router.push('/dashboard/goals');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case 'COMPLETED': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+      case 'IN_PROGRESS': return 'bg-blue-100 text-blue-700 border-blue-200';
+      case 'IN_REVIEW': return 'bg-purple-100 text-purple-700 border-purple-200';
+      case 'NOT_STARTED': return 'bg-amber-100 text-amber-700 border-amber-200';
+      case 'OVERDUE': return 'bg-rose-100 text-rose-700 border-rose-200';
+      default: return 'bg-slate-50 text-slate-500 border-slate-100';
     }
   };
 
@@ -113,6 +124,21 @@ export default function GoalDetailPage() {
 
   const handleUpdateGoal = async (e) => {
     e.preventDefault();
+
+    if (editGoal.dueDate && goal.milestones?.length > 0) {
+      const newGoalDate = new Date(editGoal.dueDate);
+      const latestMilestone = goal.milestones.reduce((latest, current) => {
+        if (!current.dueDate) return latest;
+        const currentDate = new Date(current.dueDate);
+        return (!latest || currentDate > latest) ? currentDate : latest;
+      }, null);
+
+      if (latestMilestone && newGoalDate < latestMilestone) {
+        toast.error(`Goal due date cannot be earlier than your latest milestone (${latestMilestone.toLocaleDateString()})`);
+        return;
+      }
+    }
+
     try {
       const res = await fetchWithAuth(`/workspaces/${currentWorkspace.id}/goals/${id}`, {
         method: 'PATCH',
@@ -140,11 +166,12 @@ export default function GoalDetailPage() {
     }
   };
 
-  const handleToggleMilestone = async (milestoneId, completed) => {
+  const handleToggleMilestone = async (milestoneId, currentProgress) => {
+    const newProgress = currentProgress === 100 ? 0 : 100;
     try {
       const res = await fetchWithAuth(`/workspaces/${currentWorkspace.id}/goals/${id}/milestones/${milestoneId}`, {
         method: 'PATCH',
-        body: JSON.stringify({ completed: !completed }),
+        body: JSON.stringify({ progress: newProgress, completed: newProgress === 100 }),
       });
       if (res?.data) {
         setGoal(prev => ({
@@ -159,17 +186,31 @@ export default function GoalDetailPage() {
 
   const handleAddMilestone = async (e) => {
     e.preventDefault();
+    
+    if (newMilestone.dueDate && goal.dueDate) {
+      const milestoneDate = new Date(newMilestone.dueDate);
+      const goalDate = new Date(goal.dueDate);
+      if (milestoneDate > goalDate) {
+        toast.error(`Milestone due date cannot be after the goal due date (${goalDate.toLocaleDateString()})`);
+        return;
+      }
+    }
+
     try {
       const res = await fetchWithAuth(`/workspaces/${currentWorkspace.id}/goals/${id}/milestones`, {
         method: 'POST',
-        body: JSON.stringify(newMilestone),
+        body: JSON.stringify({
+          ...newMilestone,
+          progress: parseInt(newMilestone.progress || 0),
+          completed: parseInt(newMilestone.progress || 0) === 100
+        }),
       });
       if (res?.data) {
         setGoal(prev => ({
           ...prev,
           milestones: [...(prev.milestones || []), res.data]
         }));
-        setNewMilestone({ title: "", dueDate: "" });
+        setNewMilestone({ title: "", dueDate: "", progress: 0 });
         setIsMilestoneModalOpen(false);
         toast.success("Milestone added");
       }
@@ -180,17 +221,32 @@ export default function GoalDetailPage() {
 
   const handleSaveMilestoneEdit = async (e) => {
     e.preventDefault();
+
+    if (editingMilestone.dueDate && goal.dueDate) {
+      const milestoneDate = new Date(editingMilestone.dueDate);
+      const goalDate = new Date(goal.dueDate);
+      if (milestoneDate > goalDate) {
+        toast.error(`Milestone due date cannot be after the goal due date (${goalDate.toLocaleDateString()})`);
+        return;
+      }
+    }
+
     try {
       const res = await fetchWithAuth(`/workspaces/${currentWorkspace.id}/goals/${id}/milestones/${editingMilestone.id}`, {
         method: 'PATCH',
-        body: JSON.stringify({ title: editingMilestone.title, dueDate: editingMilestone.dueDate }),
+        body: JSON.stringify({ 
+          title: editingMilestone.title, 
+          dueDate: editingMilestone.dueDate, 
+          progress: parseInt(editingMilestone.progress),
+          completed: parseInt(editingMilestone.progress) === 100
+        }),
       });
       if (res?.data) {
         setGoal(prev => ({
           ...prev,
           milestones: prev.milestones.map(m => m.id === editingMilestone.id ? res.data : m)
         }));
-        setEditingMilestone({ id: null, title: "", dueDate: "" });
+        setEditingMilestone({ id: null, title: "", dueDate: "", progress: 0 });
         toast.success("Milestone updated");
       }
     } catch (err) {
@@ -222,10 +278,11 @@ export default function GoalDetailPage() {
   }
 
   if (!goal) return null;
-
-  const completedMilestones = goal.milestones?.filter(m => m.completed).length || 0;
+  
+  const totalProgress = goal.milestones?.reduce((acc, m) => acc + (m.progress || 0), 0) || 0;
   const totalMilestones = goal.milestones?.length || 0;
-  const progressPercent = totalMilestones > 0 ? Math.round((completedMilestones / totalMilestones) * 100) : 0;
+  const progressPercent = totalMilestones > 0 ? Math.round(totalProgress / totalMilestones) : 0;
+  const completedMilestones = goal.milestones?.filter(m => (m.progress || 0) === 100).length || 0;
   const today = new Date().toISOString().split('T')[0];
 
   return (
@@ -307,48 +364,73 @@ export default function GoalDetailPage() {
                   }`}
                 >
                   {editingMilestone.id === milestone.id ? (
-                    <form onSubmit={handleSaveMilestoneEdit} className="flex-1 flex items-center gap-3">
-                      <input 
-                        type="text"
-                        className="flex-1 px-3 py-1.5 text-sm border border-indigo-200 rounded-lg focus:ring-1 focus:ring-indigo-500 outline-none"
-                        value={editingMilestone.title}
-                        onChange={(e) => setEditingMilestone({ ...editingMilestone, title: e.target.value })}
-                        autoFocus
-                      />
-                      <input 
-                        type="date"
-                        min={today}
-                        className="px-2 py-1.5 text-xs border border-indigo-200 rounded-lg outline-none"
-                        value={editingMilestone.dueDate}
-                        onChange={(e) => setEditingMilestone({ ...editingMilestone, dueDate: e.target.value })}
-                      />
-                      <button type="submit" className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all">
-                        <CheckCircle2 size={18} />
-                      </button>
-                      <button 
-                        type="button" 
-                        onClick={() => setEditingMilestone({ id: null, title: "", dueDate: "" })}
-                        className="p-1.5 text-gray-400 hover:bg-gray-50 rounded-lg transition-all"
-                      >
-                        <X size={18} />
-                      </button>
+                    <form onSubmit={handleSaveMilestoneEdit} className="flex-1 space-y-3">
+                      <div className="flex items-center gap-3">
+                        <input 
+                          type="text"
+                          className="flex-1 px-3 py-1.5 text-sm border border-indigo-200 rounded-lg focus:ring-1 focus:ring-indigo-500 outline-none"
+                          value={editingMilestone.title}
+                          onChange={(e) => setEditingMilestone({ ...editingMilestone, title: e.target.value })}
+                          autoFocus
+                        />
+                        <input 
+                          type="date"
+                          min={today}
+                          className="px-2 py-1.5 text-xs border border-indigo-200 rounded-lg outline-none"
+                          value={editingMilestone.dueDate}
+                          onChange={(e) => setEditingMilestone({ ...editingMilestone, dueDate: e.target.value })}
+                        />
+                      </div>
+                      <div className="flex items-center gap-4 px-1">
+                        <input 
+                          type="range" 
+                          min="0" 
+                          max="100" 
+                          step="5"
+                          className="flex-1 h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                          value={editingMilestone.progress}
+                          onChange={(e) => setEditingMilestone({ ...editingMilestone, progress: e.target.value })}
+                        />
+                        <span className="text-xs font-black text-indigo-600 w-8">{editingMilestone.progress}%</span>
+                        <div className="flex gap-1 ml-auto">
+                          <button type="submit" className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all">
+                            <CheckCircle2 size={18} />
+                          </button>
+                          <button 
+                            type="button" 
+                            onClick={() => setEditingMilestone({ id: null, title: "", dueDate: "", progress: 0 })}
+                            className="p-1.5 text-gray-400 hover:bg-gray-50 rounded-lg transition-all"
+                          >
+                            <X size={18} />
+                          </button>
+                        </div>
+                      </div>
                     </form>
                   ) : (
                     <>
                       <button 
-                        onClick={() => handleToggleMilestone(milestone.id, milestone.completed)}
+                        onClick={() => handleToggleMilestone(milestone.id, milestone.progress || 0)}
                         className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
-                          milestone.completed 
+                          (milestone.progress || 0) === 100
                             ? 'bg-emerald-500 border-emerald-500 text-white' 
                             : 'border-gray-200 group-hover:border-indigo-500'
                         }`}
                       >
-                        {milestone.completed && <CheckCircle2 size={14} />}
+                        {(milestone.progress || 0) === 100 && <CheckCircle2 size={14} />}
                       </button>
                       <div className="flex-1 min-w-0">
-                        <h3 className={`text-sm font-bold truncate ${milestone.completed ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
-                          {milestone.title}
-                        </h3>
+                        <div className="flex justify-between items-center mb-1">
+                          <h3 className={`text-sm font-bold truncate ${milestone.progress === 100 ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
+                            {milestone.title}
+                          </h3>
+                          <span className="text-[10px] font-black text-indigo-600">{milestone.progress || 0}%</span>
+                        </div>
+                        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden mb-2">
+                          <div 
+                            className="h-full bg-indigo-500 rounded-full transition-all"
+                            style={{ width: `${milestone.progress || 0}%` }}
+                          ></div>
+                        </div>
                         {milestone.dueDate && (
                           <p className="text-[11px] text-gray-400 mt-0.5">Due {new Date(milestone.dueDate).toLocaleDateString()}</p>
                         )}
@@ -358,7 +440,8 @@ export default function GoalDetailPage() {
                           onClick={() => setEditingMilestone({ 
                             id: milestone.id, 
                             title: milestone.title, 
-                            dueDate: milestone.dueDate ? new Date(milestone.dueDate).toISOString().split('T')[0] : "" 
+                            dueDate: milestone.dueDate ? new Date(milestone.dueDate).toISOString().split('T')[0] : "" ,
+                            progress: milestone.progress || 0
                           })}
                           className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg"
                         >
@@ -509,9 +592,7 @@ export default function GoalDetailPage() {
                 </div>
                 <div>
                   <p className="text-[11px] font-bold text-gray-400 uppercase">Status</p>
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase mt-1 ${
-                    goal.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                  }`}>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase mt-1 border ${getStatusStyle(goal.status)}`}>
                     {goal.status.replace('_', ' ')}
                   </span>
                 </div>
@@ -677,6 +758,22 @@ export default function GoalDetailPage() {
                   value={newMilestone.dueDate}
                   onChange={(e) => setNewMilestone({ ...newMilestone, dueDate: e.target.value })}
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Initial Progress</label>
+                <div className="flex items-center gap-4">
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="100" 
+                    step="5"
+                    className="flex-1 h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                    value={newMilestone.progress}
+                    onChange={(e) => setNewMilestone({ ...newMilestone, progress: e.target.value })}
+                  />
+                  <span className="text-sm font-black text-indigo-600 w-10">{newMilestone.progress}%</span>
+                </div>
               </div>
 
               <div className="flex gap-3 pt-4">
