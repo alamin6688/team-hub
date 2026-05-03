@@ -104,10 +104,6 @@ export default function AnalyticsPage() {
             <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mb-1">{stat.label}</p>
             <div className="flex items-end justify-between">
               <h3 className={`text-3xl font-bold ${stat.color}`}>{stat.value}</h3>
-              <div className="flex items-center gap-1 text-[10px] font-bold text-emerald-500 bg-emerald-50 px-2 py-1 rounded-full">
-                <ArrowUpRight size={12} />
-                12%
-              </div>
             </div>
           </motion.div>
         ))}

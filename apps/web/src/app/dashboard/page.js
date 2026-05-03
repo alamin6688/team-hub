@@ -9,23 +9,17 @@ import {
 import { fetchWithAuth } from '@/lib/api';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 
-const weeklyChartData = [
-  { name: 'W14', value: 3 },
-  { name: 'W15', value: 5 },
-  { name: 'W16', value: 4 },
-  { name: 'W17', value: 7 },
-  { name: 'W18', value: 6 },
-  { name: 'W19', value: 9 },
-];
-
 export default function DashboardPage() {
   const { 
     currentWorkspace, 
     goals, setGoals, 
     announcements, setAnnouncements,
     actionItems, setActionItems,
+    fetchAnalytics,
     isLoading, setLoading 
   } = useWorkspaceStore();
+
+  const [analytics, setAnalytics] = React.useState(null);
 
   React.useEffect(() => {
     if (!currentWorkspace?.id) return;
@@ -33,15 +27,17 @@ export default function DashboardPage() {
     const fetchDashboardData = async () => {
       setLoading(true);
       try {
-        const [goalsRes, announcementsRes, actionItemsRes] = await Promise.all([
+        const [goalsRes, announcementsRes, actionItemsRes, analyticsRes] = await Promise.all([
           fetchWithAuth(`/workspaces/${currentWorkspace.id}/goals`),
           fetchWithAuth(`/workspaces/${currentWorkspace.id}/announcements`),
           fetchWithAuth(`/workspaces/${currentWorkspace.id}/action-items`),
+          fetchAnalytics(currentWorkspace.id)
         ]);
 
         if (goalsRes?.data) setGoals(goalsRes.data);
         if (announcementsRes?.data) setAnnouncements(announcementsRes.data);
         if (actionItemsRes?.data) setActionItems(actionItemsRes.data);
+        if (analyticsRes) setAnalytics(analyticsRes);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
@@ -63,6 +59,15 @@ export default function DashboardPage() {
     { name: 'To Do', value: actionItems.filter(i => i.status === 'TODO').length, color: '#9ca3af' },
     { name: 'In Progress', value: actionItems.filter(i => i.status === 'IN_PROGRESS').length, color: '#f59e0b' },
     { name: 'Done', value: actionItems.filter(i => i.status === 'DONE').length, color: '#22c55e' },
+  ];
+
+  const weeklyChartData = analytics?.weeklyCompletion || [
+    { name: 'W1', value: 0 },
+    { name: 'W2', value: 0 },
+    { name: 'W3', value: 0 },
+    { name: 'W4', value: 0 },
+    { name: 'W5', value: 0 },
+    { name: 'W6', value: 0 },
   ];
 
   const overdueList = goals.filter(g => new Date(g.dueDate) < new Date() && g.status !== 'COMPLETED').slice(0, 5);

@@ -271,6 +271,27 @@ const getWorkspaceAnalytics = async (workspaceId) => {
 
   const totalOverdueCount = goalStats.overdue + overdueActionItemsCount;
 
+  // Weekly completion data for the last 6 weeks
+  const weeklyCompletion = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - (i * 7));
+    const start = new Date(d);
+    start.setDate(start.getDate() - 7);
+    const end = d;
+    
+    const count = goals.filter(g => 
+      g.status === 'COMPLETED' && 
+      new Date(g.updatedAt) >= start && 
+      new Date(g.updatedAt) <= end
+    ).length;
+    
+    weeklyCompletion.push({ 
+      name: `Week ${6-i}`, 
+      value: count 
+    });
+  }
+
   return {
     summary: [
       { label: 'Total Goals', value: goalStats.total, color: 'text-indigo-600' },
@@ -288,6 +309,7 @@ const getWorkspaceAnalytics = async (workspaceId) => {
       { name: 'In Progress', value: actionItemStats.inProgress },
       { name: 'Todo', value: actionItemStats.todo },
     ],
+    weeklyCompletion,
     overdueGoals,
   };
 };
