@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 export default function RegisterPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
@@ -113,14 +114,23 @@ export default function RegisterPage() {
 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1.5">Confirm password</label>
-          <input
-            type="password"
-            required
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#e94560]/20 focus:border-[#e94560] outline-none transition-all"
-            placeholder="••••••••"
-            value={formData.confirmPassword}
-            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-          />
+          <div className="relative">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              required
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#e94560]/20 focus:border-[#e94560] outline-none transition-all"
+              placeholder="••••••••"
+              value={formData.confirmPassword}
+              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            >
+              {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
         </div>
 
         <button

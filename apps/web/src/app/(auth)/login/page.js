@@ -13,9 +13,9 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
-    email: "",
+    email: Cookies.get("remembered_email") || "",
     password: "",
-    rememberMe: false,
+    rememberMe: !!Cookies.get("remembered_email"),
   });
 
   const handleSubmit = async (e) => {
@@ -42,9 +42,18 @@ export default function LoginPage() {
       // Success
       const token = data.data?.accessToken;
       if (token) {
-        Cookies.set("token", token, { expires: 7, path: "/" });
+        // Set expiry: 30 days if rememberMe is checked, else 1 day
+        const expiry = formData.rememberMe ? 30 : 1;
+        Cookies.set("token", token, { expires: expiry, path: "/" });
+        
+        // Also remember the email if requested
+        if (formData.rememberMe) {
+          Cookies.set("remembered_email", formData.email, { expires: 30, path: "/" });
+        } else {
+          Cookies.remove("remembered_email", { path: "/" });
+        }
       }
-      toast.success("Welcome back!");
+      localStorage.setItem("show_login_toast", "true");
       router.push("/dashboard");
     } catch (err) {
       toast.error(err.message || "Invalid credentials");

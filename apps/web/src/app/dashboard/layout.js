@@ -15,6 +15,13 @@ export default function DashboardLayout({ children }) {
   const router = useRouter();
   const [showLogoutModal, setShowLogoutModal] = React.useState(false);
 
+  React.useEffect(() => {
+    if (localStorage.getItem("show_login_toast") === "true") {
+      toast.success("Welcome back!");
+      localStorage.removeItem("show_login_toast");
+    }
+  }, []);
+
   const handleLogout = () => {
     Cookies.remove('token', { path: '/' });
     toast.success('Logged out successfully');
