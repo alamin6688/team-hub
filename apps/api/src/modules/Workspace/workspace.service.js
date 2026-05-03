@@ -1,4 +1,5 @@
 const prisma = require("../../lib/prisma");
+const { logAction } = require("../AuditLog/audit-log.service");
 
 const getAllWorkspaces = async (userId) => {
   return await prisma.workspace.findMany({
@@ -92,19 +93,26 @@ const getWorkspaceMembers = async (workspaceId) => {
   }));
 };
 
-const inviteMember = async (workspaceId, { email, role }) => {
+const inviteMember = async (workspaceId, actorId, { email, role }) => {
   const workspace = await prisma.workspace.findUnique({ where: { id: workspaceId } });
   if (!workspace) throw new Error("Workspace not found");
 
   // In a real app, we would create a pending invitation record.
-  // For this demo, we'll assume the user exists or will create an account.
   const inviteLink = `${process.env.FRONTEND_URL || "http://localhost:3000"}/register?invite=${workspaceId}&email=${email}`;
   
+  await logAction({
+    action: "MEMBER_INVITED",
+    entityType: "MEMBER",
+    entityId: email,
+    metadata: { email, role },
+    actorId,
+    workspaceId
+  });
+
   try {
     await sendInviteEmail(email, workspace.name, inviteLink);
   } catch (error) {
     console.error("Email sending failed:", error);
-    // In demo mode, we don't want to throw error if SMTP is not configured
     return { 
       success: true, 
       message: "Invitation logged (Email failed - check SMTP config)",
@@ -115,8 +123,8 @@ const inviteMember = async (workspaceId, { email, role }) => {
   return { success: true, message: "Invitation sent" };
 };
 
-const updateMemberRole = async (workspaceId, userId, role) => {
-  return await prisma.workspaceMember.update({
+const updateMemberRole = async (workspaceId, actorId, userId, role) => {
+  const result = await prisma.workspaceMember.update({
     where: {
       userId_workspaceId: {
         userId,
@@ -125,10 +133,21 @@ const updateMemberRole = async (workspaceId, userId, role) => {
     },
     data: { role },
   });
+
+  await logAction({
+    action: "MEMBER_ROLE_UPDATED",
+    entityType: "MEMBER",
+    entityId: userId,
+    metadata: { role },
+    actorId,
+    workspaceId
+  });
+
+  return result;
 };
 
-const removeMember = async (workspaceId, userId) => {
-  return await prisma.workspaceMember.delete({
+const removeMember = async (workspaceId, actorId, userId) => {
+  const result = await prisma.workspaceMember.delete({
     where: {
       userId_workspaceId: {
         userId,
@@ -136,10 +155,20 @@ const removeMember = async (workspaceId, userId) => {
       },
     },
   });
+
+  await logAction({
+    action: "MEMBER_REMOVED",
+    entityType: "MEMBER",
+    entityId: userId,
+    actorId,
+    workspaceId
+  });
+
+  return result;
 };
 
-const blockMember = async (workspaceId, userId, isBlocked) => {
-  return await prisma.workspaceMember.update({
+const blockMember = async (workspaceId, actorId, userId, isBlocked) => {
+  const result = await prisma.workspaceMember.update({
     where: {
       userId_workspaceId: {
         userId,
@@ -148,20 +177,51 @@ const blockMember = async (workspaceId, userId, isBlocked) => {
     },
     data: { isBlocked },
   });
+
+  await logAction({
+    action: isBlocked ? "MEMBER_BLOCKED" : "MEMBER_UNBLOCKED",
+    entityType: "MEMBER",
+    entityId: userId,
+    actorId,
+    workspaceId
+  });
+
+  return result;
 };
 
-const updateWorkspace = async (id, payload) => {
+const updateWorkspace = async (id, actorId, payload) => {
   const { name, description, accentColor } = payload;
-  return await prisma.workspace.update({
+  const result = await prisma.workspace.update({
     where: { id },
     data: { name, description, accentColor },
   });
+
+  await logAction({
+    action: "WORKSPACE_UPDATED",
+    entityType: "WORKSPACE",
+    entityId: id,
+    metadata: payload,
+    actorId,
+    workspaceId: id
+  });
+
+  return result;
 };
 
-const deleteWorkspace = async (id) => {
-  return await prisma.workspace.delete({
+const deleteWorkspace = async (id, actorId) => {
+  const result = await prisma.workspace.delete({
     where: { id },
   });
+
+  await logAction({
+    action: "WORKSPACE_DELETED",
+    entityType: "WORKSPACE",
+    entityId: id,
+    actorId,
+    workspaceId: id
+  });
+
+  return result;
 };
 
 const getWorkspaceAnalytics = async (workspaceId) => {
@@ -232,17 +292,16 @@ const getWorkspaceAnalytics = async (workspaceId) => {
   };
 };
 
-const createGoal = async (workspaceId, ownerId, payload) => {
+const createGoal = async (workspaceId, actorId, payload) => {
   const data = {
     ...payload,
     workspaceId,
-    ownerId,
+    ownerId: actorId,
   };
 
   if (data.dueDate) {
     data.dueDate = new Date(data.dueDate);
     
-    // Logic check: Due date shouldn't be in the past
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (data.dueDate < today) {
@@ -250,26 +309,62 @@ const createGoal = async (workspaceId, ownerId, payload) => {
     }
   }
 
-  return await prisma.goal.create({
+  const result = await prisma.goal.create({
     data,
   });
+
+  await logAction({
+    action: "GOAL_CREATED",
+    entityType: "GOAL",
+    entityId: result.id,
+    metadata: { title: result.title },
+    actorId,
+    workspaceId
+  });
+
+  return result;
 };
 
-const updateGoal = async (id, payload) => {
+const updateGoal = async (id, actorId, payload) => {
   const data = { ...payload };
   if (data.dueDate) {
     data.dueDate = new Date(data.dueDate);
   }
-  return await prisma.goal.update({
+  const result = await prisma.goal.update({
     where: { id },
     data,
   });
+
+  await logAction({
+    action: "GOAL_UPDATED",
+    entityType: "GOAL",
+    entityId: id,
+    metadata: data,
+    actorId,
+    workspaceId: result.workspaceId
+  });
+
+  return result;
 };
 
-const deleteGoal = async (id) => {
-  return await prisma.goal.delete({
+const deleteGoal = async (id, actorId) => {
+  const goal = await prisma.goal.findUnique({ where: { id } });
+  if (!goal) throw new Error("Goal not found");
+
+  const result = await prisma.goal.delete({
     where: { id },
   });
+
+  await logAction({
+    action: "GOAL_DELETED",
+    entityType: "GOAL",
+    entityId: id,
+    metadata: { title: goal.title },
+    actorId,
+    workspaceId: goal.workspaceId
+  });
+
+  return result;
 };
 
 const initializeDefaultWorkspace = async (userId, name) => {

@@ -1,4 +1,5 @@
 const prisma = require("../../lib/prisma");
+const { logAction } = require("../AuditLog/audit-log.service");
 
 const getWorkspaceActionItems = async (workspaceId) => {
   return await prisma.actionItem.findMany({
@@ -22,7 +23,7 @@ const getWorkspaceActionItems = async (workspaceId) => {
   });
 };
 
-const createActionItem = async (workspaceId, data) => {
+const createActionItem = async (workspaceId, actorId, data) => {
   if (data.dueDate && data.dueDate !== "") {
     const dueDate = new Date(data.dueDate);
     const today = new Date();
@@ -42,7 +43,7 @@ const createActionItem = async (workspaceId, data) => {
     data.goalId = null;
   }
 
-  return await prisma.actionItem.create({
+  const result = await prisma.actionItem.create({
     data: {
       ...data,
       workspaceId,
@@ -57,9 +58,20 @@ const createActionItem = async (workspaceId, data) => {
       },
     },
   });
+
+  await logAction({
+    action: "TASK_CREATED",
+    entityType: "TASK",
+    entityId: result.id,
+    metadata: { title: result.title },
+    actorId,
+    workspaceId
+  });
+
+  return result;
 };
 
-const updateActionItem = async (id, data) => {
+const updateActionItem = async (id, actorId, data) => {
   if (data.dueDate && data.dueDate !== "") {
     const dueDate = new Date(data.dueDate);
     const today = new Date();
@@ -79,7 +91,7 @@ const updateActionItem = async (id, data) => {
     data.goalId = null;
   }
 
-  return await prisma.actionItem.update({
+  const result = await prisma.actionItem.update({
     where: { id },
     data,
     include: {
@@ -92,12 +104,37 @@ const updateActionItem = async (id, data) => {
       },
     },
   });
+
+  await logAction({
+    action: "TASK_UPDATED",
+    entityType: "TASK",
+    entityId: id,
+    metadata: data,
+    actorId,
+    workspaceId: result.workspaceId
+  });
+
+  return result;
 };
 
-const deleteActionItem = async (id) => {
-  return await prisma.actionItem.delete({
+const deleteActionItem = async (id, actorId) => {
+  const task = await prisma.actionItem.findUnique({ where: { id } });
+  if (!task) throw new Error("Task not found");
+
+  const result = await prisma.actionItem.delete({
     where: { id },
   });
+
+  await logAction({
+    action: "TASK_DELETED",
+    entityType: "TASK",
+    entityId: id,
+    metadata: { title: task.title },
+    actorId,
+    workspaceId: task.workspaceId
+  });
+
+  return result;
 };
 
 module.exports.ActionItemService = {

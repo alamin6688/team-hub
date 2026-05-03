@@ -96,7 +96,7 @@ const createGoal = async (req, res, next) => {
 
 const updateGoal = async (req, res, next) => {
   try {
-    const result = await WorkspaceService.updateGoal(req.params.id, req.body);
+    const result = await WorkspaceService.updateGoal(req.params.id, req.user.id, req.body);
     res.status(httpStatus.OK).json({
       success: true,
       message: "Goal updated successfully",
@@ -109,7 +109,7 @@ const updateGoal = async (req, res, next) => {
 
 const deleteGoal = async (req, res, next) => {
   try {
-    await WorkspaceService.deleteGoal(req.params.id);
+    await WorkspaceService.deleteGoal(req.params.id, req.user.id);
     res.status(httpStatus.OK).json({
       success: true,
       message: "Goal deleted successfully",
@@ -245,7 +245,7 @@ const deleteGoalUpdate = async (req, res, next) => {
 
 const inviteMember = async (req, res, next) => {
   try {
-    const result = await WorkspaceService.inviteMember(req.params.id, req.body);
+    const result = await WorkspaceService.inviteMember(req.params.id, req.user.id, req.body);
     res.status(httpStatus.OK).json({
       success: true,
       data: result,
@@ -257,7 +257,7 @@ const inviteMember = async (req, res, next) => {
 
 const updateMemberRole = async (req, res, next) => {
   try {
-    const result = await WorkspaceService.updateMemberRole(req.params.id, req.params.userId, req.body.role);
+    const result = await WorkspaceService.updateMemberRole(req.params.id, req.user.id, req.params.userId, req.body.role);
     res.status(httpStatus.OK).json({
       success: true,
       data: result,
@@ -269,7 +269,7 @@ const updateMemberRole = async (req, res, next) => {
 
 const removeMember = async (req, res, next) => {
   try {
-    await WorkspaceService.removeMember(req.params.id, req.params.userId);
+    await WorkspaceService.removeMember(req.params.id, req.user.id, req.params.userId);
     res.status(httpStatus.OK).json({
       success: true,
       message: "Member removed",
@@ -281,7 +281,7 @@ const removeMember = async (req, res, next) => {
 
 const blockMember = async (req, res, next) => {
   try {
-    const result = await WorkspaceService.blockMember(req.params.id, req.params.userId, req.body.isBlocked);
+    const result = await WorkspaceService.blockMember(req.params.id, req.user.id, req.params.userId, req.body.isBlocked);
     res.status(httpStatus.OK).json({
       success: true,
       data: result,
@@ -308,7 +308,7 @@ const updateWorkspace = async (req, res, next) => {
       });
     }
 
-    const result = await WorkspaceService.updateWorkspace(workspaceId, req.body);
+    const result = await WorkspaceService.updateWorkspace(workspaceId, userId, req.body);
     res.status(httpStatus.OK).json({
       success: true,
       data: result,
@@ -320,7 +320,7 @@ const updateWorkspace = async (req, res, next) => {
 
 const deleteWorkspace = async (req, res, next) => {
   try {
-    await WorkspaceService.deleteWorkspace(req.params.id);
+    await WorkspaceService.deleteWorkspace(req.params.id, req.user.id);
     res.status(httpStatus.OK).json({
       success: true,
       message: "Workspace deleted",

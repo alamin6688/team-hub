@@ -1,4 +1,5 @@
 const prisma = require("../../lib/prisma");
+const { logAction } = require("../AuditLog/audit-log.service");
 
 const getWorkspaceAnnouncements = async (workspaceId) => {
   return await prisma.announcement.findMany({
@@ -19,12 +20,12 @@ const getWorkspaceAnnouncements = async (workspaceId) => {
   });
 };
 
-const createAnnouncement = async (workspaceId, authorId, data) => {
-  return await prisma.announcement.create({
+const createAnnouncement = async (workspaceId, actorId, data) => {
+  const result = await prisma.announcement.create({
     data: {
       ...data,
       workspaceId,
-      authorId,
+      authorId: actorId,
     },
     include: {
       author: {
@@ -34,10 +35,21 @@ const createAnnouncement = async (workspaceId, authorId, data) => {
       reactions: true,
     },
   });
+
+  await logAction({
+    action: "ANNOUNCEMENT_CREATED",
+    entityType: "ANNOUNCEMENT",
+    entityId: result.id,
+    metadata: { title: result.title },
+    actorId,
+    workspaceId
+  });
+
+  return result;
 };
 
-const updateAnnouncement = async (id, data) => {
-  return await prisma.announcement.update({
+const updateAnnouncement = async (id, actorId, data) => {
+  const result = await prisma.announcement.update({
     where: { id },
     data,
     include: {
@@ -52,6 +64,37 @@ const updateAnnouncement = async (id, data) => {
       reactions: true,
     },
   });
+
+  await logAction({
+    action: "ANNOUNCEMENT_UPDATED",
+    entityType: "ANNOUNCEMENT",
+    entityId: id,
+    metadata: data,
+    actorId,
+    workspaceId: result.workspaceId
+  });
+
+  return result;
+};
+
+const deleteAnnouncement = async (id, actorId) => {
+  const announcement = await prisma.announcement.findUnique({ where: { id } });
+  if (!announcement) throw new Error("Announcement not found");
+
+  const result = await prisma.announcement.delete({
+    where: { id },
+  });
+
+  await logAction({
+    action: "ANNOUNCEMENT_DELETED",
+    entityType: "ANNOUNCEMENT",
+    entityId: id,
+    metadata: { title: announcement.title },
+    actorId,
+    workspaceId: announcement.workspaceId
+  });
+
+  return result;
 };
 
 const addReaction = async (announcementId, userId, emoji) => {
@@ -163,6 +206,7 @@ module.exports.AnnouncementService = {
   getWorkspaceAnnouncements,
   createAnnouncement,
   updateAnnouncement,
+  deleteAnnouncement,
   addReaction,
   addComment,
 };

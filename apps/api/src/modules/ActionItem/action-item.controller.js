@@ -16,7 +16,7 @@ const getWorkspaceActionItems = async (req, res, next) => {
 
 const createActionItem = async (req, res, next) => {
   try {
-    const result = await ActionItemService.createActionItem(req.params.wsId, req.body);
+    const result = await ActionItemService.createActionItem(req.params.wsId, req.user.id, req.body);
     
     // Real-time update
     if (global.io) {
@@ -35,7 +35,7 @@ const createActionItem = async (req, res, next) => {
 
 const updateActionItem = async (req, res, next) => {
   try {
-    const result = await ActionItemService.updateActionItem(req.params.id, req.body);
+    const result = await ActionItemService.updateActionItem(req.params.id, req.user.id, req.body);
     
     // Real-time update
     if (global.io) {
@@ -54,7 +54,7 @@ const updateActionItem = async (req, res, next) => {
 
 const deleteActionItem = async (req, res, next) => {
   try {
-    await ActionItemService.deleteActionItem(req.params.id);
+    await ActionItemService.deleteActionItem(req.params.id, req.user.id);
     
     // Real-time update
     if (global.io) {

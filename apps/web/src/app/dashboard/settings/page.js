@@ -4,13 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { 
   User, Settings, Shield, Trash2, Camera, 
   Save, Globe, Lock, Bell, Mail, Info,
-  CheckCircle2, AlertCircle
+  CheckCircle2, AlertCircle, History
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import AuditLogTimeline from '@/components/dashboard/AuditLogTimeline';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -111,6 +112,7 @@ export default function SettingsPage() {
     { id: 'workspace', label: 'Workspace', icon: Globe },
     { id: 'security', label: 'Security', icon: Lock },
     { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'audit-log', label: 'Activity Log', icon: History },
   ];
 
   return (
@@ -339,6 +341,25 @@ export default function SettingsPage() {
                     </button>
                   </div>
                 </form>
+              </motion.div>
+            )}
+
+            {activeTab === 'audit-log' && (
+              <motion.div
+                key="audit-log"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="bg-white rounded-[32px] border border-slate-100 shadow-sm p-8"
+              >
+                <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900">Workspace Activity</h3>
+                    <p className="text-xs text-slate-500 mt-1">Detailed history of all changes made to this workspace</p>
+                  </div>
+                </div>
+                
+                <AuditLogTimeline />
               </motion.div>
             )}
 

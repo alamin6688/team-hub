@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 
 export default function GoalsPage() {
   const router = useRouter();
-  const { currentWorkspace, goals, setGoals } = useWorkspaceStore();
+  const { currentWorkspace, goals, setGoals, fetchGoals, createGoal, deleteGoal } = useWorkspaceStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, goalId: null });
   const [isLoading, setIsLoading] = useState(false);
@@ -23,19 +23,11 @@ export default function GoalsPage() {
     status: "NOT_STARTED",
   });
 
-  const fetchGoals = async () => {
-    if (!currentWorkspace?.id) return;
-    try {
-      const res = await fetchWithAuth(`/workspaces/${currentWorkspace.id}/goals`);
-      if (res?.data) setGoals(res.data);
-    } catch (err) {
-      console.error("Failed to fetch goals:", err);
-    }
-  };
-
   useEffect(() => {
-    fetchGoals();
-  }, [currentWorkspace?.id]);
+    if (currentWorkspace?.id) {
+      fetchGoals(currentWorkspace.id);
+    }
+  }, [currentWorkspace?.id, fetchGoals]);
 
   const handleCreateGoal = async (e) => {
     e.preventDefault();
@@ -46,14 +38,10 @@ export default function GoalsPage() {
     setIsLoading(true);
 
     try {
-      await fetchWithAuth(`/workspaces/${currentWorkspace.id}/goals`, {
-        method: 'POST',
-        body: JSON.stringify(newGoal),
-      });
+      await createGoal(currentWorkspace.id, newGoal);
       toast.success("Goal created successfully!");
       setIsModalOpen(false);
       setNewGoal({ title: "", description: "", dueDate: "", status: "NOT_STARTED" });
-      fetchGoals();
     } catch (err) {
       toast.error(err.message || "Failed to create goal");
     } finally {
@@ -66,12 +54,9 @@ export default function GoalsPage() {
     if (!goalId) return;
 
     try {
-      await fetchWithAuth(`/workspaces/${currentWorkspace.id}/goals/${goalId}`, {
-        method: 'DELETE',
-      });
+      await deleteGoal(currentWorkspace.id, goalId);
       toast.success("Goal deleted successfully");
       setDeleteModal({ isOpen: false, goalId: null });
-      fetchGoals();
     } catch (err) {
       toast.error(err.message || "Failed to delete goal");
     }

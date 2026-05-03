@@ -6,6 +6,7 @@ const router = express.Router();
 
 const actionItemRoutes = require("../ActionItem/action-item.routes");
 const announcementRoutes = require("../Announcement/announcement.routes");
+const auditLogRoutes = require("../AuditLog/audit-log.routes");
 
 router.get("/", auth(), WorkspaceController.getAllWorkspaces);
 router.post("/", auth(), WorkspaceController.createWorkspace);
@@ -30,6 +31,7 @@ router.delete("/:wsId/goals/:goalId/milestones/:id", auth(), WorkspaceController
 
 router.use("/:wsId/announcements", announcementRoutes);
 router.use("/:wsId/action-items", actionItemRoutes);
+router.use("/:wsId/audit-logs", auditLogRoutes);
 
 router.get("/:wsId/members", auth(), WorkspaceController.getWorkspaceMembers);
 router.post("/:id/invite", auth(), WorkspaceController.inviteMember);

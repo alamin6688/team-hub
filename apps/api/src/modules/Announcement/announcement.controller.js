@@ -32,7 +32,7 @@ const createAnnouncement = async (req, res, next) => {
 
 const updateAnnouncement = async (req, res, next) => {
   try {
-    const result = await AnnouncementService.updateAnnouncement(req.params.id, req.body);
+    const result = await AnnouncementService.updateAnnouncement(req.params.id, req.user.id, req.body);
     
     if (global.io) {
       global.io.to(req.params.wsId).emit("announcement-updated", result);
@@ -103,10 +103,28 @@ const addComment = async (req, res, next) => {
   }
 };
 
+const deleteAnnouncement = async (req, res, next) => {
+  try {
+    await AnnouncementService.deleteAnnouncement(req.params.id, req.user.id);
+    
+    if (global.io) {
+      global.io.to(req.params.wsId).emit("announcement-deleted", req.params.id);
+    }
+
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: "Announcement deleted",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports.AnnouncementController = {
   getWorkspaceAnnouncements,
   createAnnouncement,
   updateAnnouncement,
+  deleteAnnouncement,
   addReaction,
   addComment,
 };
