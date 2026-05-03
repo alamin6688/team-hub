@@ -33,7 +33,8 @@ export default function TasksPage() {
     createActionItem, 
     updateActionItem, 
     deleteActionItem,
-    members 
+    members,
+    goals
   } = useWorkspaceStore();
 
   const [formData, setFormData] = useState({
@@ -42,7 +43,8 @@ export default function TasksPage() {
     priority: 'MEDIUM',
     status: 'TODO',
     assigneeId: '',
-    dueDate: ''
+    dueDate: '',
+    goalId: ''
   });
 
   useEffect(() => {
@@ -93,7 +95,8 @@ export default function TasksPage() {
         priority: 'MEDIUM',
         status: 'TODO',
         assigneeId: '',
-        dueDate: ''
+        dueDate: '',
+        goalId: ''
       });
     } catch (error) {
       toast.error(error.message || "Something went wrong");
@@ -110,7 +113,8 @@ export default function TasksPage() {
       priority: task.priority,
       status: task.status,
       assigneeId: task.assigneeId || '',
-      dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : ''
+      dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
+      goalId: task.goalId || ''
     });
     setShowAddModal(true);
   };
@@ -212,6 +216,11 @@ export default function TasksPage() {
                                     <span className={`text-sm font-bold leading-tight ${task.status === 'DONE' ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
                                       {task.title}
                                     </span>
+                                    {task.goal && (
+                                      <span className="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full w-max mt-1 border border-indigo-100">
+                                        Goal: {task.goal.title}
+                                      </span>
+                                    )}
                                     {task.description && (
                                       <p className="text-xs text-gray-500 line-clamp-2 mt-1 font-medium">{task.description}</p>
                                     )}
@@ -293,7 +302,14 @@ export default function TasksPage() {
                   onClick={() => handleEdit(task)}
                 >
                   <td className="px-8 py-5">
-                    <span className={`font-bold text-gray-800 ${task.status === 'DONE' ? 'line-through text-gray-400' : ''}`}>{task.title}</span>
+                    <div className="flex flex-col gap-1">
+                      <span className={`font-bold text-gray-800 ${task.status === 'DONE' ? 'line-through text-gray-400' : ''}`}>{task.title}</span>
+                      {task.goal && (
+                        <span className="text-[10px] font-bold text-indigo-500 truncate w-max max-w-[200px]">
+                          Goal: {task.goal.title}
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-8 py-5">
                     <div className="flex items-center gap-2">
@@ -449,6 +465,20 @@ export default function TasksPage() {
                     className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:bg-white transition-all"
                   />
                 </div>
+              </div>
+              
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Link to Goal (Optional)</label>
+                <select 
+                  value={formData.goalId}
+                  onChange={(e) => setFormData({...formData, goalId: e.target.value})}
+                  className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:bg-white transition-all"
+                >
+                  <option value="">No Goal</option>
+                  {goals.map(goal => (
+                    <option key={goal.id} value={goal.id}>{goal.title}</option>
+                  ))}
+                </select>
               </div>
               
               <div className="flex gap-4 pt-4">

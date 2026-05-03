@@ -38,6 +38,9 @@ const createActionItem = async (workspaceId, data) => {
   if (data.assigneeId === "") {
     data.assigneeId = null;
   }
+  if (data.goalId === "") {
+    data.goalId = null;
+  }
 
   return await prisma.actionItem.create({
     data: {
@@ -71,6 +74,9 @@ const updateActionItem = async (id, data) => {
 
   if (data.assigneeId === "") {
     data.assigneeId = null;
+  }
+  if (data.goalId === "") {
+    data.goalId = null;
   }
 
   return await prisma.actionItem.update({
