@@ -66,6 +66,8 @@ const getWorkspaceActionItems = async (workspaceId) => {
   });
 };
 
+const { sendInviteEmail } = require("../../lib/mail");
+
 const getWorkspaceMembers = async (workspaceId) => {
   const members = await prisma.workspaceMember.findMany({
     where: { workspaceId },
@@ -84,8 +86,68 @@ const getWorkspaceMembers = async (workspaceId) => {
   return members.map(m => ({
     ...m.user,
     role: m.role,
-    isOnline: true, // Mocked for now, integrate with Socket.io later
+    isBlocked: m.isBlocked,
+    joinedAt: m.joinedAt,
+    isOnline: global.isUserOnline ? global.isUserOnline(m.userId) : false,
   }));
+};
+
+const inviteMember = async (workspaceId, { email, role }) => {
+  const workspace = await prisma.workspace.findUnique({ where: { id: workspaceId } });
+  if (!workspace) throw new Error("Workspace not found");
+
+  // In a real app, we would create a pending invitation record.
+  // For this demo, we'll assume the user exists or will create an account.
+  const inviteLink = `${process.env.FRONTEND_URL || "http://localhost:3000"}/register?invite=${workspaceId}&email=${email}`;
+  
+  try {
+    await sendInviteEmail(email, workspace.name, inviteLink);
+  } catch (error) {
+    console.error("Email sending failed:", error);
+    // In demo mode, we don't want to throw error if SMTP is not configured
+    return { 
+      success: true, 
+      message: "Invitation logged (Email failed - check SMTP config)",
+      inviteLink 
+    };
+  }
+  
+  return { success: true, message: "Invitation sent" };
+};
+
+const updateMemberRole = async (workspaceId, userId, role) => {
+  return await prisma.workspaceMember.update({
+    where: {
+      userId_workspaceId: {
+        userId,
+        workspaceId,
+      },
+    },
+    data: { role },
+  });
+};
+
+const removeMember = async (workspaceId, userId) => {
+  return await prisma.workspaceMember.delete({
+    where: {
+      userId_workspaceId: {
+        userId,
+        workspaceId,
+      },
+    },
+  });
+};
+
+const blockMember = async (workspaceId, userId, isBlocked) => {
+  return await prisma.workspaceMember.update({
+    where: {
+      userId_workspaceId: {
+        userId,
+        workspaceId,
+      },
+    },
+    data: { isBlocked },
+  });
 };
 
 const createGoal = async (workspaceId, ownerId, payload) => {
@@ -240,4 +302,8 @@ module.exports.WorkspaceService = {
   getWorkspaceAnnouncements,
   getWorkspaceActionItems,
   getWorkspaceMembers,
+  inviteMember,
+  updateMemberRole,
+  removeMember,
+  blockMember,
 };

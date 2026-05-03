@@ -31,5 +31,9 @@ router.use("/:wsId/announcements", announcementRoutes);
 router.use("/:wsId/action-items", actionItemRoutes);
 
 router.get("/:wsId/members", auth(), WorkspaceController.getWorkspaceMembers);
+router.post("/:id/invite", auth(), WorkspaceController.inviteMember);
+router.patch("/:id/members/:userId", auth(), WorkspaceController.updateMemberRole);
+router.delete("/:id/members/:userId", auth(), WorkspaceController.removeMember);
+router.patch("/:id/members/:userId/block", auth(), WorkspaceController.blockMember);
 
 module.exports = router;

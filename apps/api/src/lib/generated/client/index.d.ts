@@ -4734,6 +4734,7 @@ export namespace Prisma {
   export type WorkspaceMemberMinAggregateOutputType = {
     id: string | null
     role: $Enums.Role | null
+    isBlocked: boolean | null
     userId: string | null
     workspaceId: string | null
     joinedAt: Date | null
@@ -4742,6 +4743,7 @@ export namespace Prisma {
   export type WorkspaceMemberMaxAggregateOutputType = {
     id: string | null
     role: $Enums.Role | null
+    isBlocked: boolean | null
     userId: string | null
     workspaceId: string | null
     joinedAt: Date | null
@@ -4750,6 +4752,7 @@ export namespace Prisma {
   export type WorkspaceMemberCountAggregateOutputType = {
     id: number
     role: number
+    isBlocked: number
     userId: number
     workspaceId: number
     joinedAt: number
@@ -4760,6 +4763,7 @@ export namespace Prisma {
   export type WorkspaceMemberMinAggregateInputType = {
     id?: true
     role?: true
+    isBlocked?: true
     userId?: true
     workspaceId?: true
     joinedAt?: true
@@ -4768,6 +4772,7 @@ export namespace Prisma {
   export type WorkspaceMemberMaxAggregateInputType = {
     id?: true
     role?: true
+    isBlocked?: true
     userId?: true
     workspaceId?: true
     joinedAt?: true
@@ -4776,6 +4781,7 @@ export namespace Prisma {
   export type WorkspaceMemberCountAggregateInputType = {
     id?: true
     role?: true
+    isBlocked?: true
     userId?: true
     workspaceId?: true
     joinedAt?: true
@@ -4857,6 +4863,7 @@ export namespace Prisma {
   export type WorkspaceMemberGroupByOutputType = {
     id: string
     role: $Enums.Role
+    isBlocked: boolean
     userId: string
     workspaceId: string
     joinedAt: Date
@@ -4882,6 +4889,7 @@ export namespace Prisma {
   export type WorkspaceMemberSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     role?: boolean
+    isBlocked?: boolean
     userId?: boolean
     workspaceId?: boolean
     joinedAt?: boolean
@@ -4892,6 +4900,7 @@ export namespace Prisma {
   export type WorkspaceMemberSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     role?: boolean
+    isBlocked?: boolean
     userId?: boolean
     workspaceId?: boolean
     joinedAt?: boolean
@@ -4902,6 +4911,7 @@ export namespace Prisma {
   export type WorkspaceMemberSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     role?: boolean
+    isBlocked?: boolean
     userId?: boolean
     workspaceId?: boolean
     joinedAt?: boolean
@@ -4912,12 +4922,13 @@ export namespace Prisma {
   export type WorkspaceMemberSelectScalar = {
     id?: boolean
     role?: boolean
+    isBlocked?: boolean
     userId?: boolean
     workspaceId?: boolean
     joinedAt?: boolean
   }
 
-  export type WorkspaceMemberOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "role" | "userId" | "workspaceId" | "joinedAt", ExtArgs["result"]["workspaceMember"]>
+  export type WorkspaceMemberOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "role" | "isBlocked" | "userId" | "workspaceId" | "joinedAt", ExtArgs["result"]["workspaceMember"]>
   export type WorkspaceMemberInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     workspace?: boolean | WorkspaceDefaultArgs<ExtArgs>
@@ -4940,6 +4951,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       role: $Enums.Role
+      isBlocked: boolean
       userId: string
       workspaceId: string
       joinedAt: Date
@@ -5370,6 +5382,7 @@ export namespace Prisma {
   interface WorkspaceMemberFieldRefs {
     readonly id: FieldRef<"WorkspaceMember", 'String'>
     readonly role: FieldRef<"WorkspaceMember", 'Role'>
+    readonly isBlocked: FieldRef<"WorkspaceMember", 'Boolean'>
     readonly userId: FieldRef<"WorkspaceMember", 'String'>
     readonly workspaceId: FieldRef<"WorkspaceMember", 'String'>
     readonly joinedAt: FieldRef<"WorkspaceMember", 'DateTime'>
@@ -15925,6 +15938,7 @@ export namespace Prisma {
   export const WorkspaceMemberScalarFieldEnum: {
     id: 'id',
     role: 'role',
+    isBlocked: 'isBlocked',
     userId: 'userId',
     workspaceId: 'workspaceId',
     joinedAt: 'joinedAt'
@@ -16140,6 +16154,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+  /**
    * Reference to a field of type 'GoalStatus'
    */
   export type EnumGoalStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GoalStatus'>
@@ -16164,13 +16185,6 @@ export namespace Prisma {
    * Reference to a field of type 'Int[]'
    */
   export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'Boolean'
-   */
-  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -16405,6 +16419,7 @@ export namespace Prisma {
     NOT?: WorkspaceMemberWhereInput | WorkspaceMemberWhereInput[]
     id?: StringFilter<"WorkspaceMember"> | string
     role?: EnumRoleFilter<"WorkspaceMember"> | $Enums.Role
+    isBlocked?: BoolFilter<"WorkspaceMember"> | boolean
     userId?: StringFilter<"WorkspaceMember"> | string
     workspaceId?: StringFilter<"WorkspaceMember"> | string
     joinedAt?: DateTimeFilter<"WorkspaceMember"> | Date | string
@@ -16415,6 +16430,7 @@ export namespace Prisma {
   export type WorkspaceMemberOrderByWithRelationInput = {
     id?: SortOrder
     role?: SortOrder
+    isBlocked?: SortOrder
     userId?: SortOrder
     workspaceId?: SortOrder
     joinedAt?: SortOrder
@@ -16429,6 +16445,7 @@ export namespace Prisma {
     OR?: WorkspaceMemberWhereInput[]
     NOT?: WorkspaceMemberWhereInput | WorkspaceMemberWhereInput[]
     role?: EnumRoleFilter<"WorkspaceMember"> | $Enums.Role
+    isBlocked?: BoolFilter<"WorkspaceMember"> | boolean
     userId?: StringFilter<"WorkspaceMember"> | string
     workspaceId?: StringFilter<"WorkspaceMember"> | string
     joinedAt?: DateTimeFilter<"WorkspaceMember"> | Date | string
@@ -16439,6 +16456,7 @@ export namespace Prisma {
   export type WorkspaceMemberOrderByWithAggregationInput = {
     id?: SortOrder
     role?: SortOrder
+    isBlocked?: SortOrder
     userId?: SortOrder
     workspaceId?: SortOrder
     joinedAt?: SortOrder
@@ -16453,6 +16471,7 @@ export namespace Prisma {
     NOT?: WorkspaceMemberScalarWhereWithAggregatesInput | WorkspaceMemberScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"WorkspaceMember"> | string
     role?: EnumRoleWithAggregatesFilter<"WorkspaceMember"> | $Enums.Role
+    isBlocked?: BoolWithAggregatesFilter<"WorkspaceMember"> | boolean
     userId?: StringWithAggregatesFilter<"WorkspaceMember"> | string
     workspaceId?: StringWithAggregatesFilter<"WorkspaceMember"> | string
     joinedAt?: DateTimeWithAggregatesFilter<"WorkspaceMember"> | Date | string
@@ -17289,6 +17308,7 @@ export namespace Prisma {
   export type WorkspaceMemberCreateInput = {
     id?: string
     role?: $Enums.Role
+    isBlocked?: boolean
     joinedAt?: Date | string
     user: UserCreateNestedOneWithoutMembershipsInput
     workspace: WorkspaceCreateNestedOneWithoutMembersInput
@@ -17297,6 +17317,7 @@ export namespace Prisma {
   export type WorkspaceMemberUncheckedCreateInput = {
     id?: string
     role?: $Enums.Role
+    isBlocked?: boolean
     userId: string
     workspaceId: string
     joinedAt?: Date | string
@@ -17305,6 +17326,7 @@ export namespace Prisma {
   export type WorkspaceMemberUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutMembershipsNestedInput
     workspace?: WorkspaceUpdateOneRequiredWithoutMembersNestedInput
@@ -17313,6 +17335,7 @@ export namespace Prisma {
   export type WorkspaceMemberUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
     userId?: StringFieldUpdateOperationsInput | string
     workspaceId?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -17321,6 +17344,7 @@ export namespace Prisma {
   export type WorkspaceMemberCreateManyInput = {
     id?: string
     role?: $Enums.Role
+    isBlocked?: boolean
     userId: string
     workspaceId: string
     joinedAt?: Date | string
@@ -17329,12 +17353,14 @@ export namespace Prisma {
   export type WorkspaceMemberUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type WorkspaceMemberUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
     userId?: StringFieldUpdateOperationsInput | string
     workspaceId?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -18233,6 +18259,11 @@ export namespace Prisma {
     not?: NestedEnumRoleFilter<$PrismaModel> | $Enums.Role
   }
 
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type UserScalarRelationFilter = {
     is?: UserWhereInput
     isNot?: UserWhereInput
@@ -18251,6 +18282,7 @@ export namespace Prisma {
   export type WorkspaceMemberCountOrderByAggregateInput = {
     id?: SortOrder
     role?: SortOrder
+    isBlocked?: SortOrder
     userId?: SortOrder
     workspaceId?: SortOrder
     joinedAt?: SortOrder
@@ -18259,6 +18291,7 @@ export namespace Prisma {
   export type WorkspaceMemberMaxOrderByAggregateInput = {
     id?: SortOrder
     role?: SortOrder
+    isBlocked?: SortOrder
     userId?: SortOrder
     workspaceId?: SortOrder
     joinedAt?: SortOrder
@@ -18267,6 +18300,7 @@ export namespace Prisma {
   export type WorkspaceMemberMinOrderByAggregateInput = {
     id?: SortOrder
     role?: SortOrder
+    isBlocked?: SortOrder
     userId?: SortOrder
     workspaceId?: SortOrder
     joinedAt?: SortOrder
@@ -18280,6 +18314,14 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumRoleFilter<$PrismaModel>
     _max?: NestedEnumRoleFilter<$PrismaModel>
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type EnumGoalStatusFilter<$PrismaModel = never> = {
@@ -18381,11 +18423,6 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
-  export type BoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
   export type GoalScalarRelationFilter = {
     is?: GoalWhereInput
     isNot?: GoalWhereInput
@@ -18443,14 +18480,6 @@ export namespace Prisma {
     _sum?: NestedIntFilter<$PrismaModel>
     _min?: NestedIntFilter<$PrismaModel>
     _max?: NestedIntFilter<$PrismaModel>
-  }
-
-  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type EnumPriorityFilter<$PrismaModel = never> = {
@@ -19378,6 +19407,10 @@ export namespace Prisma {
     set?: $Enums.Role
   }
 
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
   export type UserUpdateOneRequiredWithoutMembershipsNestedInput = {
     create?: XOR<UserCreateWithoutMembershipsInput, UserUncheckedCreateWithoutMembershipsInput>
     connectOrCreate?: UserCreateOrConnectWithoutMembershipsInput
@@ -19568,10 +19601,6 @@ export namespace Prisma {
     decrement?: number
     multiply?: number
     divide?: number
-  }
-
-  export type BoolFieldUpdateOperationsInput = {
-    set?: boolean
   }
 
   export type GoalUpdateOneRequiredWithoutMilestonesNestedInput = {
@@ -19990,6 +20019,11 @@ export namespace Prisma {
     not?: NestedEnumRoleFilter<$PrismaModel> | $Enums.Role
   }
 
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type NestedEnumRoleWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.Role | EnumRoleFieldRefInput<$PrismaModel>
     in?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
@@ -19998,6 +20032,14 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumRoleFilter<$PrismaModel>
     _max?: NestedEnumRoleFilter<$PrismaModel>
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type NestedEnumGoalStatusFilter<$PrismaModel = never> = {
@@ -20042,11 +20084,6 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
-  export type NestedBoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -20072,14 +20109,6 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatFilter<$PrismaModel> | number
-  }
-
-  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type NestedEnumPriorityFilter<$PrismaModel = never> = {
@@ -20142,6 +20171,7 @@ export namespace Prisma {
   export type WorkspaceMemberCreateWithoutUserInput = {
     id?: string
     role?: $Enums.Role
+    isBlocked?: boolean
     joinedAt?: Date | string
     workspace: WorkspaceCreateNestedOneWithoutMembersInput
   }
@@ -20149,6 +20179,7 @@ export namespace Prisma {
   export type WorkspaceMemberUncheckedCreateWithoutUserInput = {
     id?: string
     role?: $Enums.Role
+    isBlocked?: boolean
     workspaceId: string
     joinedAt?: Date | string
   }
@@ -20421,6 +20452,7 @@ export namespace Prisma {
     NOT?: WorkspaceMemberScalarWhereInput | WorkspaceMemberScalarWhereInput[]
     id?: StringFilter<"WorkspaceMember"> | string
     role?: EnumRoleFilter<"WorkspaceMember"> | $Enums.Role
+    isBlocked?: BoolFilter<"WorkspaceMember"> | boolean
     userId?: StringFilter<"WorkspaceMember"> | string
     workspaceId?: StringFilter<"WorkspaceMember"> | string
     joinedAt?: DateTimeFilter<"WorkspaceMember"> | Date | string
@@ -20662,6 +20694,7 @@ export namespace Prisma {
   export type WorkspaceMemberCreateWithoutWorkspaceInput = {
     id?: string
     role?: $Enums.Role
+    isBlocked?: boolean
     joinedAt?: Date | string
     user: UserCreateNestedOneWithoutMembershipsInput
   }
@@ -20669,6 +20702,7 @@ export namespace Prisma {
   export type WorkspaceMemberUncheckedCreateWithoutWorkspaceInput = {
     id?: string
     role?: $Enums.Role
+    isBlocked?: boolean
     userId: string
     joinedAt?: Date | string
   }
@@ -22643,6 +22677,7 @@ export namespace Prisma {
   export type WorkspaceMemberCreateManyUserInput = {
     id?: string
     role?: $Enums.Role
+    isBlocked?: boolean
     workspaceId: string
     joinedAt?: Date | string
   }
@@ -22723,6 +22758,7 @@ export namespace Prisma {
   export type WorkspaceMemberUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workspace?: WorkspaceUpdateOneRequiredWithoutMembersNestedInput
   }
@@ -22730,6 +22766,7 @@ export namespace Prisma {
   export type WorkspaceMemberUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
     workspaceId?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -22737,6 +22774,7 @@ export namespace Prisma {
   export type WorkspaceMemberUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
     workspaceId?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -22973,6 +23011,7 @@ export namespace Prisma {
   export type WorkspaceMemberCreateManyWorkspaceInput = {
     id?: string
     role?: $Enums.Role
+    isBlocked?: boolean
     userId: string
     joinedAt?: Date | string
   }
@@ -23024,6 +23063,7 @@ export namespace Prisma {
   export type WorkspaceMemberUpdateWithoutWorkspaceInput = {
     id?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutMembershipsNestedInput
   }
@@ -23031,6 +23071,7 @@ export namespace Prisma {
   export type WorkspaceMemberUncheckedUpdateWithoutWorkspaceInput = {
     id?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
     userId?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -23038,6 +23079,7 @@ export namespace Prisma {
   export type WorkspaceMemberUncheckedUpdateManyWithoutWorkspaceInput = {
     id?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    isBlocked?: BoolFieldUpdateOperationsInput | boolean
     userId?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

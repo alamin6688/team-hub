@@ -75,6 +75,7 @@ model Workspace {
 model WorkspaceMember {
   id          String    @id @default(cuid())
   role        Role      @default(MEMBER)
+  isBlocked   Boolean   @default(false)
   userId      String
   workspaceId String
   joinedAt    DateTime  @default(now())

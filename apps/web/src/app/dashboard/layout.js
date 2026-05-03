@@ -134,6 +134,12 @@ export default function DashboardLayout({ children }) {
       }));
     });
 
+    socket.on('member-status-changed', ({ userId, isOnline }) => {
+      useWorkspaceStore.setState((state) => ({
+        members: state.members.map(m => m.id === userId ? { ...m, isOnline } : m)
+      }));
+    });
+
     return () => { socket.disconnect(); };
   }, [user?.id, currentWorkspace?.id]);
 
@@ -155,7 +161,7 @@ export default function DashboardLayout({ children }) {
             <div className="flex items-center justify-center w-8 h-8 rounded bg-indigo-600 text-white mr-3">
               <Hexagon size={20} fill="currentColor" />
             </div>
-            <span className="font-semibold text-gray-800 text-[15px]">Acme Corp</span>
+            <span className="font-bold text-gray-800 text-[15px]">TeamHub</span>
             <ChevronDown size={16} className="ml-auto text-gray-400" />
           </div>
 
@@ -275,7 +281,7 @@ export default function DashboardLayout({ children }) {
       <main className="flex-1 flex flex-col min-w-0">
         {/* Header */}
         <header className="h-[72px] bg-white border-b border-gray-100 flex items-center justify-between px-8">
-          <h1 className="text-lg font-bold text-gray-800">
+          <h1 className="text-lg font-semibold text-gray-800">
             {pathname === '/dashboard' ? 'Dashboard' : 
              pathname === '/dashboard/goals' ? 'Goals' :
              pathname === '/dashboard/tasks' ? 'Action Items' :

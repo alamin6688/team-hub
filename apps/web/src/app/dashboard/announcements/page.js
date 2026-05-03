@@ -81,7 +81,7 @@ export default function AnnouncementsPage() {
   const getInitials = (name) => name?.split(' ').map(n => n[0]).join('').toUpperCase() || '??';
 
   return (
-    <div className="p-8 max-w-5xl mx-auto min-h-full">
+    <div className="p-6 max-w-5xl mx-auto min-h-full">
       {/* Header section */}
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
@@ -89,7 +89,7 @@ export default function AnnouncementsPage() {
         className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4"
       >
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Announcements</h1>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Announcements</h1>
           <p className="text-slate-500 mt-1 font-medium">Stay updated with the latest team news</p>
         </div>
         
@@ -139,7 +139,7 @@ export default function AnnouncementsPage() {
                 >
                   <div className="p-8">
                     {announcement.pinned && (
-                      <div className="flex items-center gap-2 text-rose-500 font-black text-[10px] tracking-widest mb-6 bg-rose-50 w-fit px-3 py-1 rounded-full uppercase">
+                      <div className="flex items-center gap-2 text-rose-500 font-bold text-[10px] tracking-widest mb-6 bg-rose-50 w-fit px-3 py-1 rounded-full uppercase">
                         <Pin size={12} fill="currentColor" />
                         Pinned
                       </div>
@@ -154,16 +154,16 @@ export default function AnnouncementsPage() {
                           <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
                         </div>
                         <div>
-                          <h4 className="font-bold text-slate-900 leading-tight">{announcement.author?.name}</h4>
-                          <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+                          <h4 className="font-semibold text-slate-900 leading-tight">{announcement.author?.name}</h4>
+                          <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mt-0.5">
                             {new Date(announcement.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    <h3 className="text-xl font-black text-slate-900 mb-3 leading-tight">{announcement.title}</h3>
-                    <div className="text-slate-600 leading-relaxed whitespace-pre-wrap font-medium">
+                    <h3 className="text-xl font-bold text-slate-900 mb-3 leading-tight">{announcement.title}</h3>
+                    <div className="text-slate-600 leading-relaxed whitespace-pre-wrap">
                       {announcement.content}
                     </div>
 
@@ -321,14 +321,14 @@ export default function AnnouncementsPage() {
                 <div className="w-14 h-14 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center mb-4">
                   <Megaphone size={28} />
                 </div>
-                <h3 className="text-3xl font-black text-slate-900">Post Announcement</h3>
+                <h3 className="text-3xl font-bold text-slate-900">Post Announcement</h3>
                 <p className="text-slate-500 font-medium">Broadcast news to everyone in the workspace</p>
               </div>
               
               <form onSubmit={handlePost} className="space-y-8">
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Title</label>
+                    <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Title</label>
                     <input 
                       type="text" 
                       required
@@ -340,7 +340,7 @@ export default function AnnouncementsPage() {
                   </div>
                   
                   <div>
-                    <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Content</label>
+                    <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3 ml-1">Content</label>
                     <textarea 
                       required
                       value={formData.content}
@@ -384,7 +384,7 @@ export default function AnnouncementsPage() {
                   <button 
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex-[2] px-8 py-5 bg-[#1e1b4b] text-white font-bold rounded-2xl hover:bg-[#2e2a70] shadow-2xl shadow-indigo-100 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                    className="flex-[2] px-8 py-5 bg-[#1e1b4b] text-white font-semibold rounded-2xl hover:bg-[#2e2a70] shadow-2xl shadow-indigo-100 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3"
                   >
                     {isSubmitting ? (
                       <>

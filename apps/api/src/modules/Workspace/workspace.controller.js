@@ -229,6 +229,54 @@ const deleteGoalUpdate = async (req, res, next) => {
   }
 };
 
+const inviteMember = async (req, res, next) => {
+  try {
+    const result = await WorkspaceService.inviteMember(req.params.id, req.body);
+    res.status(httpStatus.OK).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateMemberRole = async (req, res, next) => {
+  try {
+    const result = await WorkspaceService.updateMemberRole(req.params.id, req.params.userId, req.body.role);
+    res.status(httpStatus.OK).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const removeMember = async (req, res, next) => {
+  try {
+    await WorkspaceService.removeMember(req.params.id, req.params.userId);
+    res.status(httpStatus.OK).json({
+      success: true,
+      message: "Member removed",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const blockMember = async (req, res, next) => {
+  try {
+    const result = await WorkspaceService.blockMember(req.params.id, req.params.userId, req.body.isBlocked);
+    res.status(httpStatus.OK).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports.WorkspaceController = {
   getAllWorkspaces,
   initializeDefaultWorkspace,
@@ -248,4 +296,8 @@ module.exports.WorkspaceController = {
   getWorkspaceAnnouncements,
   getWorkspaceActionItems,
   getWorkspaceMembers,
+  inviteMember,
+  updateMemberRole,
+  removeMember,
+  blockMember,
 };

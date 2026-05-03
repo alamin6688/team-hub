@@ -143,6 +143,7 @@ exports.Prisma.WorkspaceScalarFieldEnum = {
 exports.Prisma.WorkspaceMemberScalarFieldEnum = {
   id: 'id',
   role: 'role',
+  isBlocked: 'isBlocked',
   userId: 'userId',
   workspaceId: 'workspaceId',
   joinedAt: 'joinedAt'

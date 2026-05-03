@@ -19,8 +19,17 @@ const io = new Server(server, {
 
 global.io = io;
 
+const onlineUsers = new Map(); // userId -> socketId
+
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
+
+  socket.on("join", (userId) => {
+    socket.userId = userId;
+    onlineUsers.set(userId, socket.id);
+    io.emit("member-status-changed", { userId, isOnline: true });
+    console.log(`User ${userId} is online`);
+  });
 
   socket.on("join-workspace", (workspaceId) => {
     socket.join(workspaceId);
@@ -28,9 +37,16 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
+    if (socket.userId) {
+      onlineUsers.delete(socket.userId);
+      io.emit("member-status-changed", { userId: socket.userId, isOnline: false });
+      console.log(`User ${socket.userId} is offline`);
+    }
     console.log("User disconnected");
   });
 });
+
+global.isUserOnline = (userId) => onlineUsers.has(userId);
 
 server.listen(port, () => {
   console.log(`API Server running on port ${port}`);

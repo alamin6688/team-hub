@@ -169,6 +169,79 @@ export const useWorkspaceStore = create(
           throw error;
         }
       },
+
+      // Members Actions
+      fetchMembers: async (workspaceId) => {
+        const { fetchWithAuth } = await import("@/lib/api");
+        try {
+          const response = await fetchWithAuth(`/workspaces/${workspaceId}/members`);
+          set({ members: response.data });
+        } catch (error) {
+          console.error("Fetch members error:", error);
+        }
+      },
+
+      inviteMember: async (workspaceId, data) => {
+        const { fetchWithAuth } = await import("@/lib/api");
+        try {
+          return await fetchWithAuth(`/workspaces/${workspaceId}/invite`, {
+            method: "POST",
+            body: JSON.stringify(data),
+          });
+        } catch (error) {
+          console.error("Invite member error:", error);
+          throw error;
+        }
+      },
+
+      updateMemberRole: async (workspaceId, userId, role) => {
+        const { fetchWithAuth } = await import("@/lib/api");
+        try {
+          const response = await fetchWithAuth(`/workspaces/${workspaceId}/members/${userId}`, {
+            method: "PATCH",
+            body: JSON.stringify({ role }),
+          });
+          set((state) => ({
+            members: state.members.map((m) => m.id === userId ? { ...m, role } : m),
+          }));
+          return response.data;
+        } catch (error) {
+          console.error("Update member role error:", error);
+          throw error;
+        }
+      },
+
+      removeMember: async (workspaceId, userId) => {
+        const { fetchWithAuth } = await import("@/lib/api");
+        try {
+          await fetchWithAuth(`/workspaces/${workspaceId}/members/${userId}`, {
+            method: "DELETE",
+          });
+          set((state) => ({
+            members: state.members.filter((m) => m.id !== userId),
+          }));
+        } catch (error) {
+          console.error("Remove member error:", error);
+          throw error;
+        }
+      },
+
+      blockMember: async (workspaceId, userId, isBlocked) => {
+        const { fetchWithAuth } = await import("@/lib/api");
+        try {
+          const response = await fetchWithAuth(`/workspaces/${workspaceId}/members/${userId}/block`, {
+            method: "PATCH",
+            body: JSON.stringify({ isBlocked }),
+          });
+          set((state) => ({
+            members: state.members.map((m) => m.id === userId ? { ...m, isBlocked } : m),
+          }));
+          return response.data;
+        } catch (error) {
+          console.error("Block member error:", error);
+          throw error;
+        }
+      },
     }),
     {
       name: "workspace-storage",
