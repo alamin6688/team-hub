@@ -60,31 +60,37 @@ export default function DashboardLayout({ children }) {
     };
 
     initDashboard();
+  }, [setUser, setWorkspace, setMembers, setNotificationsCount]);
 
-    // 5. Initialize Socket.io
+  React.useEffect(() => {
+    if (!user?.id) return;
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:8020');
-    
     socket.on('connect', () => {
-      console.log('Connected to socket server');
-      if (user?.id) {
-        socket.emit('join', user.id);
-      }
+      socket.emit('join', user.id);
+      if (currentWorkspace?.id) socket.emit('join-workspace', currentWorkspace.id);
     });
-
     socket.on('notification', (notification) => {
       setNotificationsCount((prev) => prev + 1);
-      toast.success(`New notification: ${notification.title}`, {
-        icon: '🔔',
-      });
+      toast.success(`New notification: ${notification.title}`, { icon: '🔔' });
     });
-
-    if (localStorage.getItem("show_login_toast") === "true") {
-      toast.success("Welcome back!");
-      localStorage.removeItem("show_login_toast");
-    }
-  }, []);
+    socket.on('action-item-created', (item) => {
+      useWorkspaceStore.setState((state) => ({ 
+        actionItems: state.actionItems.some(ai => ai.id === item.id) 
+          ? state.actionItems 
+          : [item, ...state.actionItems] 
+      }));
+    });
+    socket.on('action-item-updated', (item) => {
+      useWorkspaceStore.setState((state) => ({ actionItems: state.actionItems.map(ai => ai.id === item.id ? item : ai) }));
+    });
+    socket.on('action-item-deleted', (itemId) => {
+      useWorkspaceStore.setState((state) => ({ actionItems: state.actionItems.filter(ai => ai.id !== itemId) }));
+    });
+    return () => { socket.disconnect(); };
+  }, [user?.id, currentWorkspace?.id]);
 
   const handleLogout = () => {
+
     Cookies.remove('token', { path: '/' });
     clearAuth();
     toast.success('Logged out successfully');

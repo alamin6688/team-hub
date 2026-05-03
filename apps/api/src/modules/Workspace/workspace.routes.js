@@ -4,6 +4,8 @@ const auth = require("../../middleware/auth");
 
 const router = express.Router();
 
+const actionItemRoutes = require("../ActionItem/action-item.routes");
+
 router.get("/", auth(), WorkspaceController.getAllWorkspaces);
 router.post("/initialize", auth(), WorkspaceController.initializeDefaultWorkspace);
 router.get("/:id", auth(), WorkspaceController.getWorkspaceById);
@@ -24,7 +26,8 @@ router.post("/:wsId/goals/:goalId/milestones", auth(), WorkspaceController.creat
 router.patch("/:wsId/goals/:goalId/milestones/:id", auth(), WorkspaceController.updateMilestone);
 router.delete("/:wsId/goals/:goalId/milestones/:id", auth(), WorkspaceController.deleteMilestone);
 router.get("/:wsId/announcements", auth(), WorkspaceController.getWorkspaceAnnouncements);
-router.get("/:wsId/action-items", auth(), WorkspaceController.getWorkspaceActionItems);
+router.use("/:wsId/action-items", actionItemRoutes);
+
 router.get("/:wsId/members", auth(), WorkspaceController.getWorkspaceMembers);
 
 module.exports = router;
