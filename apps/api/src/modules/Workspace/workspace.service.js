@@ -198,12 +198,25 @@ const getWorkspaceAnalytics = async (workspaceId) => {
     }))
     .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
 
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+  const itemsCompletedThisWeek = actionItems.filter(
+    i => i.status === 'DONE' && new Date(i.updatedAt) >= oneWeekAgo
+  ).length;
+
+  const overdueActionItemsCount = actionItems.filter(
+    i => i.dueDate && new Date(i.dueDate) < now && i.status !== 'DONE'
+  ).length;
+
+  const totalOverdueCount = goalStats.overdue + overdueActionItemsCount;
+
   return {
     summary: [
       { label: 'Total Goals', value: goalStats.total, color: 'text-indigo-600' },
-      { label: 'Completed Goals', value: goalStats.completed, color: 'text-emerald-600' },
-      { label: 'Action Items', value: actionItemStats.total, color: 'text-blue-600' },
-      { label: 'Team Members', value: members, color: 'text-purple-600' },
+      { label: 'Completed This Week', value: itemsCompletedThisWeek, color: 'text-emerald-600' },
+      { label: 'Overdue Items', value: totalOverdueCount, color: 'text-rose-600' },
+      { label: 'Total Action Items', value: actionItemStats.total, color: 'text-blue-600' },
     ],
     goalChart: [
       { name: 'Completed', value: goalStats.completed },

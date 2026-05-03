@@ -13,11 +13,13 @@ import {
 import { motion } from 'framer-motion';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import toast from 'react-hot-toast';
+import Papa from 'papaparse';
+import { Download } from 'lucide-react';
 
 const COLORS = ['#6366f1', '#10b981', '#f43f5e', '#f59e0b', '#8b5cf6'];
 
 export default function AnalyticsPage() {
-  const { currentWorkspace, fetchAnalytics } = useWorkspaceStore();
+  const { currentWorkspace, fetchAnalytics, goals, actionItems } = useWorkspaceStore();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -39,6 +41,29 @@ export default function AnalyticsPage() {
     }
   };
 
+  const exportToCSV = () => {
+    try {
+      const combinedData = [
+        ...goals.map(g => ({ Type: 'Goal', Title: g.title, Status: g.status, Due: g.dueDate ? new Date(g.dueDate).toISOString().split('T')[0] : 'N/A' })),
+        ...actionItems.map(t => ({ Type: 'Task', Title: t.title, Status: t.status, Due: t.dueDate ? new Date(t.dueDate).toISOString().split('T')[0] : 'N/A' }))
+      ];
+
+      const csv = Papa.unparse(combinedData);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `${currentWorkspace.name}_export.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success("Export successful!");
+    } catch (error) {
+      toast.error("Export failed");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -57,6 +82,13 @@ export default function AnalyticsPage() {
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Analytics Dashboard</h1>
           <p className="text-slate-500 mt-1 font-normal text-sm">Deep dive into your workspace performance</p>
         </div>
+        <button 
+          onClick={exportToCSV}
+          className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-md shadow-indigo-100 transition-all active:scale-95"
+        >
+          <Download size={16} />
+          Export CSV
+        </button>
       </div>
 
       {/* Stats Grid */}
