@@ -1,5 +1,6 @@
 const httpStatus = require("http-status");
 const { WorkspaceService } = require("./workspace.service");
+const prisma = require("../../lib/prisma");
 
 const getAllWorkspaces = async (req, res, next) => {
   try {
@@ -279,7 +280,22 @@ const blockMember = async (req, res, next) => {
 
 const updateWorkspace = async (req, res, next) => {
   try {
-    const result = await WorkspaceService.updateWorkspace(req.params.id, req.body);
+    const workspaceId = req.params.id;
+    const userId = req.user.id;
+
+    // Check if user is admin
+    const member = await prisma.workspaceMember.findUnique({
+      where: { userId_workspaceId: { userId, workspaceId } },
+    });
+
+    if (!member || member.role !== "ADMIN") {
+      return res.status(httpStatus.FORBIDDEN).json({
+        success: false,
+        message: "Only admins can update workspace settings",
+      });
+    }
+
+    const result = await WorkspaceService.updateWorkspace(workspaceId, req.body);
     res.status(httpStatus.OK).json({
       success: true,
       data: result,
@@ -295,6 +311,18 @@ const deleteWorkspace = async (req, res, next) => {
     res.status(httpStatus.OK).json({
       success: true,
       message: "Workspace deleted",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getWorkspaceAnalytics = async (req, res, next) => {
+  try {
+    const result = await WorkspaceService.getWorkspaceAnalytics(req.params.wsId);
+    res.status(httpStatus.OK).json({
+      success: true,
+      data: result,
     });
   } catch (error) {
     next(error);
@@ -326,4 +354,5 @@ module.exports.WorkspaceController = {
   blockMember,
   updateWorkspace,
   deleteWorkspace,
+  getWorkspaceAnalytics,
 };

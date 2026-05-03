@@ -270,6 +270,17 @@ export const useWorkspaceStore = create(
           throw error;
         }
       },
+
+      fetchAnalytics: async (workspaceId) => {
+        const { fetchWithAuth } = await import("@/lib/api");
+        try {
+          const response = await fetchWithAuth(`/workspaces/${workspaceId}/analytics`);
+          return response.data;
+        } catch (error) {
+          console.error("Fetch analytics error:", error);
+          throw error;
+        }
+      },
     }),
     {
       name: "workspace-storage",

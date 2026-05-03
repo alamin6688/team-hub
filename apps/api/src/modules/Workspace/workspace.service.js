@@ -151,9 +151,10 @@ const blockMember = async (workspaceId, userId, isBlocked) => {
 };
 
 const updateWorkspace = async (id, payload) => {
+  const { name, description } = payload;
   return await prisma.workspace.update({
     where: { id },
-    data: payload,
+    data: { name, description },
   });
 };
 
@@ -161,6 +162,61 @@ const deleteWorkspace = async (id) => {
   return await prisma.workspace.delete({
     where: { id },
   });
+};
+
+const getWorkspaceAnalytics = async (workspaceId) => {
+  const [goals, actionItems, members] = await Promise.all([
+    prisma.goal.findMany({ where: { workspaceId } }),
+    prisma.actionItem.findMany({ where: { workspaceId } }),
+    prisma.workspaceMember.count({ where: { workspaceId } }),
+  ]);
+
+  const now = new Date();
+
+  const goalStats = {
+    total: goals.length,
+    completed: goals.filter(g => g.status === 'COMPLETED').length,
+    inProgress: goals.filter(g => g.status === 'IN_PROGRESS').length,
+    notStarted: goals.filter(g => g.status === 'NOT_STARTED').length,
+    overdue: goals.filter(g => g.dueDate && new Date(g.dueDate) < now && g.status !== 'COMPLETED').length,
+  };
+
+  const actionItemStats = {
+    total: actionItems.length,
+    done: actionItems.filter(i => i.status === 'DONE').length,
+    inProgress: actionItems.filter(i => i.status === 'IN_PROGRESS').length,
+    todo: actionItems.filter(i => i.status === 'TODO').length,
+  };
+
+  const overdueGoals = goals
+    .filter(g => g.dueDate && new Date(g.dueDate) < now && g.status !== 'COMPLETED')
+    .map(g => ({
+      id: g.id,
+      title: g.title,
+      dueDate: g.dueDate,
+      status: g.status,
+    }))
+    .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+
+  return {
+    summary: [
+      { label: 'Total Goals', value: goalStats.total, color: 'text-indigo-600' },
+      { label: 'Completed Goals', value: goalStats.completed, color: 'text-emerald-600' },
+      { label: 'Action Items', value: actionItemStats.total, color: 'text-blue-600' },
+      { label: 'Team Members', value: members, color: 'text-purple-600' },
+    ],
+    goalChart: [
+      { name: 'Completed', value: goalStats.completed },
+      { name: 'In Progress', value: goalStats.inProgress },
+      { name: 'Not Started', value: goalStats.notStarted },
+    ],
+    actionItemChart: [
+      { name: 'Done', value: actionItemStats.done },
+      { name: 'In Progress', value: actionItemStats.inProgress },
+      { name: 'Todo', value: actionItemStats.todo },
+    ],
+    overdueGoals,
+  };
 };
 
 const createGoal = async (workspaceId, ownerId, payload) => {
@@ -321,4 +377,5 @@ module.exports.WorkspaceService = {
   blockMember,
   updateWorkspace,
   deleteWorkspace,
+  getWorkspaceAnalytics,
 };

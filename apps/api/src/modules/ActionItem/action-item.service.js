@@ -23,7 +23,7 @@ const getWorkspaceActionItems = async (workspaceId) => {
 };
 
 const createActionItem = async (workspaceId, data) => {
-  if (data.dueDate) {
+  if (data.dueDate && data.dueDate !== "") {
     const dueDate = new Date(data.dueDate);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -31,6 +31,12 @@ const createActionItem = async (workspaceId, data) => {
       throw new Error("Due date cannot be in the past");
     }
     data.dueDate = dueDate;
+  } else {
+    data.dueDate = null;
+  }
+
+  if (data.assigneeId === "") {
+    data.assigneeId = null;
   }
 
   return await prisma.actionItem.create({
@@ -51,7 +57,7 @@ const createActionItem = async (workspaceId, data) => {
 };
 
 const updateActionItem = async (id, data) => {
-  if (data.dueDate) {
+  if (data.dueDate && data.dueDate !== "") {
     const dueDate = new Date(data.dueDate);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -59,7 +65,14 @@ const updateActionItem = async (id, data) => {
       throw new Error("Due date cannot be in the past");
     }
     data.dueDate = dueDate;
+  } else {
+    data.dueDate = null;
   }
+
+  if (data.assigneeId === "") {
+    data.assigneeId = null;
+  }
+
   return await prisma.actionItem.update({
     where: { id },
     data,
