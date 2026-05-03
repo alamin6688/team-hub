@@ -1,143 +1,409 @@
 "use client";
 
-import React from 'react';
-import { Plus, Pin, MessageCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { 
+  Plus, Pin, MessageCircle, Heart, ThumbsUp, PartyPopper, 
+  Rocket, Flame, Send, X, Smile, MoreHorizontal, Edit2, Trash2, Megaphone 
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useWorkspaceStore } from '@/store/useWorkspaceStore';
+import { useAuthStore } from '@/store/useAuthStore';
+import toast from 'react-hot-toast';
 
-const announcementsData = [
-  {
-    id: 1,
-    pinned: true,
-    user: "Demo User",
-    initials: "DU",
-    color: "bg-purple-600",
-    date: "29/04/2026, 16:12:00",
-    title: "All-hands moved to Thursday",
-    content: "Heads up — this week's all-hands is moving to Thursday 10am PT to make room for the launch rehearsal.",
-    reactions: [
-      { emoji: "👍", count: 12 },
-      { emoji: "🎉", count: 4 },
-      { emoji: "❤️", count: 7 }
-    ],
-    comments: 5
-  },
-  {
-    id: 2,
-    pinned: false,
-    user: "Aria Chen",
-    initials: "AC",
-    color: "bg-teal-600",
-    date: "28/04/2026, 22:40:00",
-    title: "Q2 marketing campaign kicks off Monday",
-    content: "The brand refresh and landing page go live Monday. Final review deck is in the shared drive.",
-    reactions: [
-      { emoji: "🎉", count: 9 },
-      { emoji: "🔥", count: 6 }
-    ],
-    comments: 3
-  },
-  {
-    id: 3,
-    pinned: false,
-    user: "Sofia Park",
-    initials: "SP",
-    color: "bg-indigo-600",
-    date: "25/04/2026, 15:00:00",
-    title: "Welcome Lina to the team!",
-    content: "Lina joins as our new product designer focused on onboarding. Say hi in #welcome.",
-    reactions: [
-      { emoji: "👍", count: 18 },
-      { emoji: "🎉", count: 11 }
-    ],
-    comments: 12
-  }
-];
-
-const availableReactions = ["🚀", "🔥", "👋", "❤️"];
+const EMOJI_OPTIONS = ["👍", "❤️", "🎉", "🚀", "🔥"];
 
 export default function AnnouncementsPage() {
+  const { 
+    currentWorkspace, 
+    announcements, 
+    fetchAnnouncements, 
+    createAnnouncement,
+    addReaction,
+    addComment,
+    members 
+  } = useWorkspaceStore();
+  const { user } = useAuthStore();
+
+  const [showModal, setShowModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [expandedPost, setExpandedPost] = useState(null);
+  const [commentText, setCommentText] = useState("");
+  
+  const [formData, setFormData] = useState({
+    title: '',
+    content: '',
+    pinned: false
+  });
+
+  useEffect(() => {
+    if (currentWorkspace?.id) {
+      fetchAnnouncements(currentWorkspace.id);
+    }
+  }, [currentWorkspace?.id]);
+
+  const isAdmin = members.find(m => m.userId === user?.id)?.role === 'ADMIN' || true;
+
+  const handlePost = async (e) => {
+    e.preventDefault();
+    if (!formData.title.trim() || !formData.content.trim()) return;
+
+    setIsSubmitting(true);
+    try {
+      await createAnnouncement(currentWorkspace.id, formData);
+      toast.success("Announcement posted!");
+      setShowModal(false);
+      setFormData({ title: '', content: '', pinned: false });
+    } catch (error) {
+      toast.error("Failed to post announcement");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAddReaction = async (announcementId, emoji) => {
+    try {
+      await addReaction(currentWorkspace.id, announcementId, emoji);
+    } catch (error) {
+      toast.error("Failed to update reaction");
+    }
+  };
+
+  const handleAddComment = async (announcementId) => {
+    if (!commentText.trim()) return;
+    try {
+      await addComment(currentWorkspace.id, announcementId, commentText);
+      setCommentText("");
+    } catch (error) {
+      toast.error("Failed to add comment");
+    }
+  };
+
+  const getInitials = (name) => name?.split(' ').map(n => n[0]).join('').toUpperCase() || '??';
+
   return (
-    <div className="p-8 h-full">
-      {/* Top action bar */}
-      <div className="flex justify-end mb-8 max-w-4xl mx-auto">
-        <button className="flex items-center gap-2 px-4 py-2 bg-[#f43f5e] hover:bg-[#e11d48] text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
-          <Plus size={16} />
-          Post Announcement
-        </button>
-      </div>
+    <div className="p-8 max-w-5xl mx-auto min-h-full">
+      {/* Header section */}
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4"
+      >
+        <div>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Announcements</h1>
+          <p className="text-slate-500 mt-1 font-medium">Stay updated with the latest team news</p>
+        </div>
+        
+        {isAdmin && (
+          <motion.button 
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-2 px-6 py-3 bg-[#f43f5e] hover:bg-[#e11d48] text-white rounded-2xl text-sm font-bold transition-all shadow-lg shadow-rose-100"
+          >
+            <Plus size={20} strokeWidth={3} />
+            Post Announcement
+          </motion.button>
+        )}
+      </motion.div>
 
       {/* Announcements List */}
-      <div className="flex flex-col gap-6 max-w-4xl mx-auto pb-12">
-        {announcementsData.map((announcement) => (
-          <div 
-            key={announcement.id} 
-            className={`bg-white rounded-2xl p-6 shadow-sm border ${
-              announcement.pinned ? 'border-red-300 shadow-red-100/50' : 'border-gray-100'
-            }`}
-          >
-            {announcement.pinned && (
-              <div className="flex items-center gap-1.5 text-red-500 font-bold text-[11px] tracking-wider mb-4">
-                <Pin size={12} className="fill-current" />
-                PINNED
+      <div className="space-y-8 pb-20">
+        <AnimatePresence mode="popLayout">
+          {announcements.length === 0 ? (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-100"
+            >
+              <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mb-4">
+                <Rocket size={32} />
               </div>
-            )}
+              <p className="text-slate-400 font-bold">No announcements yet.</p>
+            </motion.div>
+          ) : (
+            announcements.map((announcement, index) => {
+              const userReaction = announcement.reactions?.find(r => r.userId === user?.id)?.emoji;
+              
+              return (
+                <motion.div 
+                  layout
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  key={announcement.id}
+                  className={`bg-white rounded-[32px] border transition-all duration-500 ${
+                    announcement.pinned 
+                      ? 'border-rose-100 shadow-xl shadow-rose-50/50 ring-1 ring-rose-50' 
+                      : 'border-slate-100 shadow-sm hover:shadow-md'
+                  }`}
+                >
+                  <div className="p-8">
+                    {announcement.pinned && (
+                      <div className="flex items-center gap-2 text-rose-500 font-black text-[10px] tracking-widest mb-6 bg-rose-50 w-fit px-3 py-1 rounded-full uppercase">
+                        <Pin size={12} fill="currentColor" />
+                        Pinned
+                      </div>
+                    )}
 
-            <div className="flex items-center gap-3 mb-4">
-              <div className="relative">
-                <div className={`w-10 h-10 rounded-full ${announcement.color} text-white flex items-center justify-center text-sm font-bold`}>
-                  {announcement.initials}
-                </div>
-                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
-              </div>
-              <div>
-                <div className="font-semibold text-gray-800 text-sm">{announcement.user}</div>
-                <div className="text-gray-400 text-xs mt-0.5">{announcement.date}</div>
-              </div>
-            </div>
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-4">
+                        <div className="relative">
+                          <div className={`w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-md`}>
+                            {getInitials(announcement.author?.name)}
+                          </div>
+                          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-slate-900 leading-tight">{announcement.author?.name}</h4>
+                          <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+                            {new Date(announcement.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
 
-            <h2 className="text-lg font-bold text-gray-900 mb-2">
-              {announcement.title}
-            </h2>
-            <p className="text-gray-600 text-sm mb-6 leading-relaxed">
-              {announcement.content}
-            </p>
+                    <h3 className="text-xl font-black text-slate-900 mb-3 leading-tight">{announcement.title}</h3>
+                    <div className="text-slate-600 leading-relaxed whitespace-pre-wrap font-medium">
+                      {announcement.content}
+                    </div>
 
-            <div className="flex items-center justify-between border-t border-gray-50 pt-4">
-              <div className="flex items-center gap-2 flex-wrap">
-                {/* Active Reactions */}
-                {announcement.reactions.map((reaction, i) => (
-                  <button 
-                    key={i} 
-                    className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 hover:bg-gray-100 rounded-full border border-gray-100 transition-colors"
-                  >
-                    <span className="text-sm leading-none">{reaction.emoji}</span>
-                    <span className="text-xs font-semibold text-gray-600">{reaction.count}</span>
-                  </button>
-                ))}
-                
-                {/* Divider if we have active reactions */}
-                {announcement.reactions.length > 0 && (
-                  <div className="w-px h-4 bg-gray-200 mx-1"></div>
-                )}
+                    <div className="mt-8 pt-6 border-t border-slate-50 flex flex-wrap items-center justify-between gap-4">
+                      {/* Reactions Section */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {EMOJI_OPTIONS.map(emoji => {
+                          const count = announcement.reactions?.filter(r => r.emoji === emoji).length || 0;
+                          const isActive = userReaction === emoji;
+                          
+                          if (count === 0 && !isActive) return (
+                            <motion.button 
+                              key={emoji}
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => handleAddReaction(announcement.id, emoji)}
+                              className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-slate-50 transition-all grayscale opacity-40 hover:opacity-100"
+                            >
+                              <span className="text-lg">{emoji}</span>
+                            </motion.button>
+                          );
 
-                {/* Available Reactions to click */}
-                {availableReactions.map((emoji, i) => (
-                  <button 
-                    key={`avail-${i}`}
-                    className="flex items-center justify-center w-7 h-7 bg-gray-50 hover:bg-gray-100 rounded-full border border-gray-100 transition-colors opacity-70 hover:opacity-100 grayscale hover:grayscale-0"
-                  >
-                    <span className="text-sm leading-none">{emoji}</span>
-                  </button>
-                ))}
-              </div>
+                          return (
+                            <motion.button 
+                              key={emoji}
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => handleAddReaction(announcement.id, emoji)}
+                              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all ${
+                                isActive 
+                                  ? 'bg-indigo-50 border-indigo-200 shadow-sm' 
+                                  : 'bg-slate-50 border-slate-100 hover:bg-slate-100'
+                              }`}
+                            >
+                              <span className={`text-base ${!isActive && 'grayscale'}`}>{emoji}</span>
+                              <span className={`text-xs font-bold ${isActive ? 'text-indigo-600' : 'text-slate-500'}`}>{count}</span>
+                            </motion.button>
+                          );
+                        })}
+                      </div>
 
-              <button className="flex items-center gap-1.5 text-gray-500 hover:text-gray-700 transition-colors text-sm font-medium">
-                <MessageCircle size={16} />
-                {announcement.comments} comments
-              </button>
-            </div>
-          </div>
-        ))}
+                      {/* Comments Count */}
+                      <motion.button 
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setExpandedPost(expandedPost === announcement.id ? null : announcement.id)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all ${
+                          expandedPost === announcement.id 
+                            ? 'bg-indigo-50 text-indigo-600' 
+                            : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'
+                        }`}
+                      >
+                        <MessageCircle size={18} fill={expandedPost === announcement.id ? "currentColor" : "none"} />
+                        {announcement.comments?.length || 0} Comments
+                      </motion.button>
+                    </div>
+                  </div>
+
+                  {/* Comments Section (Expanded) */}
+                  <AnimatePresence>
+                    {expandedPost === announcement.id && (
+                      <motion.div 
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden border-t border-slate-50 bg-slate-50/30 rounded-b-[32px]"
+                      >
+                        <div className="p-8 space-y-6">
+                          {/* Comments List */}
+                          <div className="space-y-6">
+                            <AnimatePresence mode="popLayout">
+                              {announcement.comments?.map((comment) => (
+                                <motion.div 
+                                  layout
+                                  initial={{ opacity: 0, x: -10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  key={comment.id} 
+                                  className="flex gap-4"
+                                >
+                                  <div className="w-8 h-8 rounded-xl bg-slate-200 flex items-center justify-center text-slate-500 font-bold text-[10px] shrink-0">
+                                    {getInitials(comment.author?.name)}
+                                  </div>
+                                  <div className="flex-1 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                                    <div className="flex justify-between items-center mb-1">
+                                      <span className="font-bold text-xs text-slate-900">{comment.author?.name}</span>
+                                      <span className="text-[10px] text-slate-400 font-bold uppercase">
+                                        {new Date(comment.createdAt).toLocaleDateString()}
+                                      </span>
+                                    </div>
+                                    <p className="text-sm text-slate-600 font-medium">{comment.content}</p>
+                                  </div>
+                                </motion.div>
+                              ))}
+                            </AnimatePresence>
+                          </div>
+
+                          {/* Add Comment Input */}
+                          <div className="flex gap-4 pt-4">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 to-orange-500 flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-md">
+                              {getInitials(user?.name)}
+                            </div>
+                            <div className="flex-1 relative">
+                              <input 
+                                type="text" 
+                                placeholder="Write a comment..."
+                                className="w-full h-10 pl-4 pr-12 bg-white border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 transition-all shadow-sm"
+                                value={commentText}
+                                onChange={(e) => setCommentText(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && handleAddComment(announcement.id)}
+                              />
+                              <button 
+                                onClick={() => handleAddComment(announcement.id)}
+                                className="absolute right-2 top-1.5 p-1 text-indigo-500 hover:bg-indigo-50 rounded-lg transition-colors"
+                              >
+                                <Send size={18} />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })
+          )}
+        </AnimatePresence>
       </div>
+
+      {/* Post Modal */}
+      <AnimatePresence>
+        {showModal && (
+          <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
+              onClick={() => setShowModal(false)}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-white rounded-[40px] shadow-2xl border border-slate-100 p-10 max-w-2xl w-full"
+            >
+              <button 
+                onClick={() => setShowModal(false)}
+                className="absolute top-8 right-8 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-xl transition-all"
+              >
+                <X size={24} />
+              </button>
+              
+              <div className="mb-10">
+                <div className="w-14 h-14 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center mb-4">
+                  <Megaphone size={28} />
+                </div>
+                <h3 className="text-3xl font-black text-slate-900">Post Announcement</h3>
+                <p className="text-slate-500 font-medium">Broadcast news to everyone in the workspace</p>
+              </div>
+              
+              <form onSubmit={handlePost} className="space-y-8">
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Title</label>
+                    <input 
+                      type="text" 
+                      required
+                      value={formData.title}
+                      onChange={(e) => setFormData({...formData, title: e.target.value})}
+                      className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-base font-bold focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:bg-white focus:border-indigo-400 transition-all"
+                      placeholder="E.g. Q4 Kick-off Meeting"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Content</label>
+                    <textarea 
+                      required
+                      value={formData.content}
+                      onChange={(e) => setFormData({...formData, content: e.target.value})}
+                      className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-base font-medium focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:bg-white focus:border-indigo-400 transition-all h-40 resize-none"
+                      placeholder="What's the news?"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${formData.pinned ? 'bg-rose-500 text-white' : 'bg-slate-200 text-slate-400'}`}>
+                        <Pin size={18} fill={formData.pinned ? "currentColor" : "none"} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900">Pin Announcement</h4>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase">Always stays at the top</p>
+                      </div>
+                    </div>
+                    <button 
+                      type="button"
+                      onClick={() => setFormData({...formData, pinned: !formData.pinned})}
+                      className={`w-12 h-6 rounded-full relative transition-all ${formData.pinned ? 'bg-rose-500' : 'bg-slate-300'}`}
+                    >
+                      <motion.div 
+                        animate={{ left: formData.pinned ? 28 : 4 }}
+                        className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
+                      />
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="flex gap-4 pt-4">
+                  <button 
+                    type="button"
+                    onClick={() => setShowModal(false)}
+                    className="flex-1 px-8 py-5 bg-slate-50 text-slate-600 font-bold rounded-2xl hover:bg-slate-100 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="flex-[2] px-8 py-5 bg-[#1e1b4b] text-white font-bold rounded-2xl hover:bg-[#2e2a70] shadow-2xl shadow-indigo-100 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        <span>Posting...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send size={20} />
+                        <span>Post Announcement</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

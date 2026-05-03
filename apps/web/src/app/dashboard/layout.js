@@ -86,6 +86,54 @@ export default function DashboardLayout({ children }) {
     socket.on('action-item-deleted', (itemId) => {
       useWorkspaceStore.setState((state) => ({ actionItems: state.actionItems.filter(ai => ai.id !== itemId) }));
     });
+
+    // Announcements
+    socket.on('announcement-created', (announcement) => {
+      useWorkspaceStore.setState((state) => ({ 
+        announcements: state.announcements.some(a => a.id === announcement.id) 
+          ? state.announcements 
+          : [announcement, ...state.announcements] 
+      }));
+    });
+    socket.on('announcement-updated', (announcement) => {
+      useWorkspaceStore.setState((state) => ({ 
+        announcements: state.announcements.map(a => a.id === announcement.id ? announcement : a) 
+      }));
+    });
+    socket.on('announcement-reaction-updated', ({ announcementId, userId, result }) => {
+      useWorkspaceStore.setState((state) => ({
+        announcements: state.announcements.map(a => {
+          if (a.id === announcementId) {
+            let newReactions;
+            if (result.removed) {
+              // Toggle off: remove user's reaction
+              newReactions = a.reactions.filter(r => r.userId !== userId);
+            } else {
+              // Toggle on or switch: replace user's reaction
+              const filtered = a.reactions.filter(r => r.userId !== userId);
+              newReactions = [...filtered, result];
+            }
+            return { ...a, reactions: newReactions };
+          }
+          return a;
+        })
+      }));
+    });
+    socket.on('announcement-comment-added', ({ announcementId, comment }) => {
+      useWorkspaceStore.setState((state) => ({
+        announcements: state.announcements.map(a => {
+          if (a.id === announcementId) {
+            const exists = a.comments.some(c => c.id === comment.id);
+            return {
+              ...a,
+              comments: exists ? a.comments : [...a.comments, comment]
+            };
+          }
+          return a;
+        })
+      }));
+    });
+
     return () => { socket.disconnect(); };
   }, [user?.id, currentWorkspace?.id]);
 

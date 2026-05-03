@@ -95,6 +95,80 @@ export const useWorkspaceStore = create(
           throw error;
         }
       },
+
+      // Announcements Actions
+      fetchAnnouncements: async (workspaceId) => {
+        const { fetchWithAuth } = await import("@/lib/api");
+        set({ isLoading: true });
+        try {
+          const response = await fetchWithAuth(
+            `/workspaces/${workspaceId}/announcements`,
+          );
+          set({ announcements: response.data });
+        } catch (error) {
+          console.error("Fetch announcements error:", error);
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      createAnnouncement: async (workspaceId, data) => {
+        const { fetchWithAuth } = await import("@/lib/api");
+        try {
+          const response = await fetchWithAuth(
+            `/workspaces/${workspaceId}/announcements`,
+            {
+              method: "POST",
+              body: JSON.stringify(data),
+            },
+          );
+          set((state) => ({
+            announcements: state.announcements.some(a => a.id === response.data.id)
+              ? state.announcements
+              : [response.data, ...state.announcements],
+          }));
+          return response.data;
+        } catch (error) {
+          console.error("Create announcement error:", error);
+          throw error;
+        }
+      },
+
+      addReaction: async (workspaceId, announcementId, emoji) => {
+        const { fetchWithAuth } = await import("@/lib/api");
+        try {
+          const response = await fetchWithAuth(
+            `/workspaces/${workspaceId}/announcements/${announcementId}/reactions`,
+            {
+              method: "POST",
+              body: JSON.stringify({ emoji }),
+            },
+          );
+          // Socket will handle update
+          return response.data;
+        } catch (error) {
+          console.error("Add reaction error:", error);
+          throw error;
+        }
+      },
+
+      addComment: async (workspaceId, announcementId, content) => {
+        const { fetchWithAuth } = await import("@/lib/api");
+        try {
+          const response = await fetchWithAuth(
+            `/workspaces/${workspaceId}/announcements/${announcementId}/comments`,
+            {
+              method: "POST",
+              body: JSON.stringify({ content }),
+            },
+          );
+          // Socket will handle update
+          return response.data;
+        } catch (error) {
+          console.error("Add comment error:", error);
+          throw error;
+        }
+      },
     }),
     {
       name: "workspace-storage",
