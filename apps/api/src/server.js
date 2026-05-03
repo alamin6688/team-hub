@@ -50,6 +50,48 @@ io.on("connection", (socket) => {
 
 global.isUserOnline = (userId) => onlineUsers.has(userId);
 
-server.listen(port, () => {
-  console.log(`API Server running on port ${port}`);
+const prisma = require("./lib/prisma");
+const bcrypt = require("bcryptjs");
+
+const initializeAdminUser = async () => {
+  try {
+    const adminEmail = "admin@teamhub.com";
+    const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
+
+    if (!existingAdmin) {
+      console.log("Seeding admin user...");
+      const hashedPassword = await bcrypt.hash("admin123", 12);
+      const user = await prisma.user.create({
+        data: {
+          email: adminEmail,
+          password: hashedPassword,
+          name: "Alamin",
+          role: "ADMIN"
+        }
+      });
+
+      // Create a default workspace for the admin
+      await prisma.workspace.create({
+        data: {
+          name: "Marketing Workspace",
+          accentColor: "#8b5cf6", // Default purple for admin
+          members: {
+            create: {
+              userId: user.id,
+              role: "ADMIN"
+            }
+          }
+        }
+      });
+      console.log("Admin user seeded successfully.");
+    }
+  } catch (error) {
+    console.error("Error seeding admin user:", error);
+  }
+};
+
+initializeAdminUser().then(() => {
+  server.listen(port, () => {
+    console.log(`API Server running on port ${port}`);
+  });
 });

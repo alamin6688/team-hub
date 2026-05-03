@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 
@@ -65,7 +65,7 @@ export default function LoginPage() {
 
   return (
     <div>
-      <div className="mb-8">
+      <div className="mb-8 mx-auto text-center">
         <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
         <p className="text-slate-500 mt-1">Sign in to your account</p>
       </div>
@@ -84,10 +84,10 @@ export default function LoginPage() {
         </div>
 
         <div>
-          <div className="flex justify-between items-center mb-1.5">
+          {/* <div className="flex justify-between items-center mb-1.5">
             <label className="block text-sm font-medium text-slate-700">Password</label>
             <a href="#" className="text-xs font-semibold text-[#e94560] hover:underline">Forgot?</a>
-          </div>
+          </div> */}
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
@@ -128,6 +128,29 @@ export default function LoginPage() {
           {isLoading ? <Loader2 className="animate-spin" size={20} /> : "Sign in"}
         </button>
       </form>
+
+      <div className="mt-8 p-5 bg-slate-50/50 rounded-2xl border border-slate-100 border-dashed">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Quick Demo Access</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setFormData({ ...formData, email: "admin@teamhub.com", password: "admin123" });
+            toast.success("Demo credentials loaded!");
+          }}
+          className="w-full text-left group flex items-center justify-between"
+        >
+          <div>
+            <p className="text-xs font-bold text-slate-900 group-hover:text-[#e94560] transition-colors">Use admin account</p>
+            <p className="text-[10px] text-slate-500">admin@teamhub.com / admin123</p>
+          </div>
+          <div className="p-1.5 bg-white rounded-lg shadow-sm border border-slate-100 group-hover:border-[#e94560]/30 transition-all">
+            <ChevronRight size={14} className="text-slate-400 group-hover:text-[#e94560] group-hover:translate-x-0.5 transition-all" />
+          </div>
+        </button>
+      </div>
 
       <div className="mt-8 text-center text-sm text-slate-500">
         Don't have an account?{" "}
